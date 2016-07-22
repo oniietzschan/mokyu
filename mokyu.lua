@@ -17,7 +17,7 @@ function Sprite:initialize(image, width, height, cols, rows)
   return self
     :setImage(image)
     :initializeQuads(width, height, cols, rows)
-    :setOrigin(0, 0)
+    :setOriginRect(0, 0, width, height)
     :addAnimation('default', {frequency = 1, 1})
 end
 
@@ -42,9 +42,14 @@ function Sprite:initializeQuads(width, height, cols, rows)
   return self
 end
 
-function Sprite:setOrigin(x, y)
-  self.originX = x
-  self.originY = y
+function Sprite:setOriginRect(x1, y1, x2, y2)
+  self.originX = x1
+  self.originY = y1
+  self.originX2 = x2
+  self.originY2 = y2
+
+  self.width  = x2 - x1
+  self.height = y2 - y1
 
   return self
 end
@@ -53,6 +58,14 @@ function Sprite:addAnimation(name, data)
   self.animations[name] = data
 
   return self
+end
+
+function Sprite:getWidth()
+  return self.width
+end
+
+function Sprite:getHeight()
+  return self.height
 end
 
 
@@ -115,6 +128,14 @@ function SpriteInstance:draw(x, y)
   )
 
   return self
+end
+
+function SpriteInstance:getWidth()
+  return self.sprite:getWidth()
+end
+
+function SpriteInstance:getHeight()
+  return self.sprite:getHeight()
 end
 
 return Mokyu
