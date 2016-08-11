@@ -1,4 +1,5 @@
-language: erlang
+language: python
+sudo: false
 
 env:
   - LUA="lua=5.1"
@@ -7,15 +8,25 @@ env:
   - LUA="luajit=2.0"
   - LUA="luajit=2.1"
 
-install:
-  - sudo apt-get install luajit
-  - sudo apt-get install luarocks
-  - sudo luarocks install luafilesystem
-  - sudo luarocks install busted
+before_install:
+  - pip install hererocks
+  - hererocks lua_install -r^ --$LUA
+  - export PATH=$PATH:$PWD/lua_install/bin
 
-script: "busted spec.lua"
+install:
+  # - luarocks install luacheck
+  - luarocks install busted
+  - luarocks install luacov
+  - luarocks install luacov-coveralls
+
+script:
+  # - luacheck --std max+busted *.lua spec
+  - busted --verbose --coverage spec.lua
 
 notifications:
   email:
     on_success: change
     on_failure: always
+
+after_success:
+  - luacov-coveralls -e $TRAVIS_BUILD_DIR/lua_install
