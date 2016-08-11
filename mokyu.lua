@@ -14,13 +14,11 @@ function Sprite:initialize(image, width, height, cols, rows)
   self.image = image
   self.animations = {}
 
-  self
+  return self
     :setImage(image)
     :initializeQuads(width, height, cols, rows)
     :setOriginRect(0, 0, width, height)
     :addAnimation('default', {frequency = 1, 1})
-
-  return self
 end
 
 function Sprite:setImage(image)

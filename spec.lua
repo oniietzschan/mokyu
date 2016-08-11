@@ -10,19 +10,20 @@ _G.love = {
   },
 }
 
-describe('Mokyu', function()
-  describe('When creating a new sprite', function()
-    local width = 16
-    local height = 24
-    local cols = 4
-    local rows = 2
+describe('Mokyu:', function()
 
-    local image = {
-      getDimensions = function()
-        return 64, 48
-      end,
-    }
+  local width = 16
+  local height = 24
+  local cols = 4
+  local rows = 2
 
+  local image = {
+    getDimensions = function()
+      return 64, 48
+    end,
+  }
+
+  describe('When creating a new sprite:', function()
     spy.on(love.graphics, 'newQuad')
 
     local sprite = Mokyu.newSprite(image, width, height, cols, rows)
@@ -59,6 +60,18 @@ describe('Mokyu', function()
         default = {frequency = 1, 1},
       }
       assert.are.same(expected, sprite.animations)
+    end)
+  end)
+
+  describe('When calling method:', function()
+    local sprite = Mokyu.newSprite(image, width, height, cols, rows)
+
+    it('getWidth should return width', function()
+      assert.are.same(16, sprite:getWidth())
+    end)
+
+    it('getHeight should return height', function()
+      assert.are.same(24, sprite:getHeight())
     end)
   end)
 end)
