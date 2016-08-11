@@ -4,6 +4,7 @@ mokyu
 Waku waku! Doki doki! ✧*｡ヾ(｡>﹏<｡)ﾉﾞ✧*｡
 
 [![Build Status](https://travis-ci.org/AKB1488/mokyu.svg?branch=master)](https://travis-ci.org/AKB1488/mokyu)
+[![Coverage Status](https://coveralls.io/repos/github/AKB1488/mokyu/badge.svg?branch=master)](https://coveralls.io/github/AKB1488/mokyu?branch=master)
 
 Build Instructions
 ------------------
