@@ -1,4 +1,4 @@
-language: python
+language: erlang
 
 env:
   - LUA="lua=5.1"
@@ -6,10 +6,6 @@ env:
   - LUA="lua=5.3"
   - LUA="luajit=2.0"
   - LUA="luajit=2.1"
-
-# branches:
-#   only:
-#     - master
 
 install:
   - sudo apt-get install luajit
@@ -20,10 +16,6 @@ install:
 script: "busted spec.lua"
 
 notifications:
-  # webhooks:
-  #   - http://my-url/travis-results
-  # recipients:
-  #   - engineering@company.com
   email:
     on_success: change
     on_failure: always

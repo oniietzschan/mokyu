@@ -3,6 +3,8 @@ mokyu
 
 Waku waku! Doki doki! ✧*｡ヾ(｡>﹏<｡)ﾉﾞ✧*｡
 
+[![Build Status](https://travis-ci.org/AKB1488/mokyu.svg?branch=master)](https://travis-ci.org/AKB1488/mokyu)
+
 Build Instructions
 ------------------
 
