@@ -10,13 +10,15 @@ function Mokyu.newSprite(...)
     :initialize(...)
 end
 
-function Sprite:initialize(image, width, height, cols, rows)
+function Sprite:initialize(image, width, height)
   self.image = image
   self.animations = {}
+  self.width  = width
+  self.height = height
 
   return self
     :setImage(image)
-    :initializeQuads(width, height, cols, rows)
+    :initializeQuads(width, height)
     :setOriginRect(0, 0, width, height)
     :addAnimation('default', {frequency = 1, 1})
 end
@@ -27,14 +29,15 @@ function Sprite:setImage(image)
   return self
 end
 
-function Sprite:initializeQuads(width, height, cols, rows)
-  cols = cols or 1
-  rows = rows or 1
+function Sprite:initializeQuads(width, height)
+  local imageWidth, imageHeight = self.image:getDimensions()
+  local cols = imageWidth / width
+  local rows = imageHeight / height
 
   self.quads = {}
   for y = 0, (rows - 1) do
     for x = 0, (cols - 1) do
-      local quad = love.graphics.newQuad(x * width, y * height, width, height, self.image:getDimensions())
+      local quad = love.graphics.newQuad(x * width, y * height, width, height, imageWidth, imageHeight)
       table.insert(self.quads, quad)
     end
   end
@@ -42,19 +45,18 @@ function Sprite:initializeQuads(width, height, cols, rows)
   return self
 end
 
-function Sprite:setOriginRect(x1, y1, x2, y2)
-  self.originX = x1
-  self.originY = y1
-  self.originX2 = x2
-  self.originY2 = y2
-
-  self.width  = x2 - x1
-  self.height = y2 - y1
+function Sprite:setOriginRect(x, y, w, h)
+  self.originX = x
+  self.originY = y
+  self.originX2 = x + w
+  self.originY2 = y + h
 
   return self
 end
 
 function Sprite:addAnimation(name, data)
+  data.frequency = data.frequency or 1
+
   self.animations[name] = data
 
   return self
@@ -86,6 +88,10 @@ function SpriteInstance:initialize(sprite)
 end
 
 function SpriteInstance:setAnimation(animation)
+  if self.sprite.animations[animation] == self.animation then
+    return self -- SpriteInstances is already using this animation
+  end
+
   if self.sprite.animations[animation] == nil then
     error('Sprite has no animation named "' .. animation .. '".')
   end
@@ -105,17 +111,21 @@ function SpriteInstance:animate(dt)
   return self
 end
 
-function SpriteInstance:draw(x, y)
-  local offsetX = self.sprite.originX
-  local offsetY = self.sprite.originY
-  local scaleX = 1
-  -- local offsetX = self.img_offset_x
-  -- local offsetY = self.img_offset_y
+function SpriteInstance:setMirrored(mirrored)
+  self.mirrored = mirrored
 
-  -- if self.img_mirror then
-  --   offsetX = w - offsetX
-  --   scaleX = -1
-  -- end
+  return self
+end
+
+function SpriteInstance:draw(x, y)
+  local offsetX = self.sprite.originX * -1
+  local offsetY = self.sprite.originY * -1
+  local scaleX = 1
+
+  if self.mirrored then
+    offsetX = self.sprite.originX2
+    scaleX = -1
+  end
 
   love.graphics.draw(
     self.sprite.image,

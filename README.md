@@ -23,26 +23,23 @@ Example
 local Mokyu = require 'mokyu'
 
 local entity = {x = 0, y = 0}
-local spriteBody
-local spriteTail
+local sprite
 
 function love.load(arg)
-  spriteTail = Mokyu.sprite()
+  local image = love.graphics.newImage('image.png')
 
-  spriteBody = Mokyu.sprite(
+  sprite = Mokyu.sprite(
+    image,
     16, -- quad width
-    16, -- quad height
-    3, -- number of quads per row
-    2 -- number of rows
+    16 --  quad height
   )
-    :setOriginRect(1, 1, 15, 15)
+    :setOriginRect(1, 1, 14, 14)
     :addAnimation('walk', {
         frequency = 2, -- two full animation cycles per second
         1, 2, 3, 4, 5, 6, -- array portion of table stores the frames
     })
-    :addBelow(spriteTail)
 
-  entity.sprite = spriteBody:newInstance()
+  entity.sprite = sprite:newInstance()
 end
 
 function love.update(dt)
