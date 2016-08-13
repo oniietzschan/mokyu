@@ -82,6 +82,7 @@ end
 
 function SpriteInstance:initialize(sprite)
   self.sprite = sprite
+  self.mirrored = false
 
   return self
     :setAnimation('default')

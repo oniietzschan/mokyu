@@ -64,7 +64,7 @@ describe('Mokyu:', function()
     end)
   end)
 
-  describe('When calling method:', function()
+  describe('When calling Sprite methods:', function()
     local sprite
 
     before_each(function()
@@ -92,9 +92,29 @@ describe('Mokyu:', function()
       local defaultAnimation = {frequency = 1, 1}
       local firstQuad = {0, 0, 16, 24, 64, 48}
 
+      assert.are.equals(sprite, spriteInstance.sprite)
+      assert.are.same(false, spriteInstance.mirrored)
+
       assert.are.same(defaultAnimation, spriteInstance.animation)
       assert.are.same(0, spriteInstance.animationPosition)
       assert.are.same(firstQuad, spriteInstance.quad)
+    end)
+  end)
+
+  describe('When calling SpriteInstance methods:', function()
+    local sprite, spriteInstance
+
+    before_each(function()
+      sprite = Mokyu.newSprite(image, width, height)
+      spriteInstance = sprite:newInstance()
+    end)
+
+    it('setMirrored should update mirrored attribute', function()
+      spriteInstance:setMirrored(true)
+      assert.are.same(true, spriteInstance.mirrored)
+
+      spriteInstance:setMirrored(false)
+      assert.are.same(false, spriteInstance.mirrored)
     end)
   end)
 end)
