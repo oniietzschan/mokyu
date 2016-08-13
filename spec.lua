@@ -11,11 +11,8 @@ _G.love = {
 }
 
 describe('Mokyu:', function()
-
   local width = 16
   local height = 24
-  local cols = 4
-  local rows = 2
 
   local image = {
     getDimensions = function()
@@ -24,9 +21,13 @@ describe('Mokyu:', function()
   }
 
   describe('When creating a new sprite:', function()
-    spy.on(love.graphics, 'newQuad')
+    local sprite
 
-    local sprite = Mokyu.newSprite(image, width, height, cols, rows)
+    before_each(function()
+      spy.on(love.graphics, 'newQuad')
+
+      sprite = Mokyu.newSprite(image, width, height)
+    end)
 
     it('It should set image', function()
       assert.are.equals(image, sprite.image)
@@ -64,7 +65,11 @@ describe('Mokyu:', function()
   end)
 
   describe('When calling method:', function()
-    local sprite = Mokyu.newSprite(image, width, height, cols, rows)
+    local sprite
+
+    before_each(function()
+      sprite = Mokyu.newSprite(image, width, height)
+    end)
 
     it('getWidth should return width', function()
       assert.are.same(16, sprite:getWidth())
@@ -72,6 +77,24 @@ describe('Mokyu:', function()
 
     it('getHeight should return height', function()
       assert.are.same(24, sprite:getHeight())
+    end)
+  end)
+
+  describe('When creating a new SpriteInstance:', function()
+    local sprite, spriteInstance
+
+    before_each(function()
+      sprite = Mokyu.newSprite(image, width, height)
+      spriteInstance = sprite:newInstance()
+    end)
+
+    it('should set animation to correct defaults', function()
+      local defaultAnimation = {frequency = 1, 1}
+      local firstQuad = {0, 0, 16, 24, 64, 48}
+
+      assert.are.same(defaultAnimation, spriteInstance.animation)
+      assert.are.same(0, spriteInstance.animationPosition)
+      assert.are.same(firstQuad, spriteInstance.quad)
     end)
   end)
 end)
