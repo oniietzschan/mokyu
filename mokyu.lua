@@ -2,6 +2,10 @@ local Mokyu = {}
 
 
 
+local rng = love.math.newRandomGenerator()
+
+
+
 local Sprite = {}
 local SpriteMetaTable = {__index = Sprite}
 
@@ -108,6 +112,18 @@ function SpriteInstance:animate(dt)
   self.animationPosition = (self.animationPosition + (self.animation.frequency * dt)) % 1
   local frame = math.floor(self.animationPosition * #self.animation) + 1
   self.quad = self.sprite.quads[self.animation[frame]]
+
+  return self
+end
+
+function SpriteInstance:setRandomAnimationPosition(pos)
+  self:setAnimationPosition(rng:random())
+
+  return self
+end
+
+function SpriteInstance:setAnimationPosition(pos)
+  self.animationPosition = pos % 1
 
   return self
 end
