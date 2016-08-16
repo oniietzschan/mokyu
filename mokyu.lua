@@ -141,6 +141,10 @@ function SpriteInstance:draw(x, y)
   return self
 end
 
+function SpriteInstance:getViewport()
+  return self.quad:getViewport()
+end
+
 function SpriteInstance:getWidth()
   return self.sprite:getWidth()
 end
