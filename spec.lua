@@ -1,14 +1,23 @@
 require 'busted'
 
-local Mokyu = require 'mokyu'
-
 _G.love = {
   graphics = {
     newQuad = spy.new(function(x1, y1, x2, y2, iw, ih)
       return {x1, y1, x2, y2, iw, ih}
     end),
   },
+  math = {
+    newRandomGenerator = spy.new(function()
+      return {
+        random = function()
+          return 0.5
+        end,
+      }
+    end),
+  }
 }
+
+local Mokyu = require 'mokyu'
 
 describe('Mokyu:', function()
   local width = 16

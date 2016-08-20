@@ -53,6 +53,5 @@ end
 function love.draw(dt)
   local x, y = entity:getPosition()
   entity.sprite:draw(x, y)
-  entity.sprite:drawMirrored(x, y)
 end
 ```
