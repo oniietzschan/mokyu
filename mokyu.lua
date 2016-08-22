@@ -104,6 +104,7 @@ function SpriteInstance:setAnimation(animation)
   self.animation = self.sprite.animations[animation]
   self.animationPosition = 0
   self:animate(0) -- Set the quad.
+  self.animationName = animation
 
   return self
 end
@@ -114,6 +115,10 @@ function SpriteInstance:animate(dt)
   self.quad = self.sprite.quads[self.animation[frame]]
 
   return self
+end
+
+function SpriteInstance:getAnimationName()
+  return self.animationName
 end
 
 function SpriteInstance:setRandomAnimationPosition(pos)

@@ -105,6 +105,7 @@ describe('Mokyu:', function()
       assert.are.same(false, spriteInstance.mirrored)
 
       assert.are.same(defaultAnimation, spriteInstance.animation)
+      assert.are.same('default', spriteInstance.animationName)
       assert.are.same(0, spriteInstance.animationPosition)
       assert.are.same(firstQuad, spriteInstance.quad)
     end)
@@ -116,6 +117,10 @@ describe('Mokyu:', function()
     before_each(function()
       sprite = Mokyu.newSprite(image, width, height)
       spriteInstance = sprite:newInstance()
+    end)
+
+    it('getAnimationName should return name of current animation', function()
+      assert.are.same('default', spriteInstance:getAnimationName())
     end)
 
     it('setMirrored should update mirrored attribute', function()
