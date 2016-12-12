@@ -74,6 +74,13 @@ function Sprite:getHeight()
   return self.height
 end
 
+function Sprite:getOriginRect()
+  return self.originX,
+         self.originY,
+         self.originX2 - self.originX,
+         self.originY2 - self.originY
+end
+
 
 
 local SpriteInstance = {}
