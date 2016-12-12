@@ -93,7 +93,7 @@ describe('Mokyu:', function()
       assert.are.same(0, originX)
       assert.are.same(0, originY)
       assert.are.same(width,  originW)
-      assert.are.same(height, originY)
+      assert.are.same(height, originH)
     end)
   end)
 
