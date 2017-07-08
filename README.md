@@ -1,10 +1,11 @@
 mokyu
 ==============================================
 
-Waku waku! Doki doki! ✧*｡ヾ(｡>﹏<｡)ﾉﾞ✧*｡
-
 [![Build Status](https://travis-ci.org/oniietzschan/mokyu.svg?branch=master)](https://travis-ci.org/oniietzschan/mokyu)
 [![Coverage Status](https://coveralls.io/repos/github/oniietzschan/mokyu/badge.svg?branch=master)](https://coveralls.io/github/oniietzschan/mokyu?branch=master)
+[![Alex](https://img.shields.io/badge/alex-never_racist-brightgreen.svg)](Alex)
+
+Waku waku! Doki doki! ✧*｡ヾ(｡>﹏<｡)ﾉﾞ✧*｡
 
 Build Instructions
 ------------------
