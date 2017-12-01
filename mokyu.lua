@@ -14,7 +14,14 @@ function Mokyu.newSprite(...)
     :initialize(...)
 end
 
-function Sprite:initialize(image, width, height)
+function Sprite:initialize(image, width, height, top, left)
+  top = top or 0
+  left = left or 0
+  assert(type(width) == 'number', 'width must be a number')
+  assert(type(height) == 'number', 'height must be a number')
+  assert(type(top) == 'number', 'top must be a number')
+  assert(type(left) == 'number', 'left must be a number')
+
   self.image = image
   self.animations = {}
   self.width  = width
@@ -22,7 +29,7 @@ function Sprite:initialize(image, width, height)
 
   return self
     :setImage(image)
-    :initializeQuads(width, height)
+    :_initializeQuads(width, height, top, left)
     :setOriginRect(0, 0, width, height)
     :addAnimation('default', {frequency = 1, 1})
 end
@@ -33,7 +40,7 @@ function Sprite:setImage(image)
   return self
 end
 
-function Sprite:initializeQuads(width, height)
+function Sprite:_initializeQuads(width, height, top, left)
   local imageWidth, imageHeight = self.image:getDimensions()
   local cols = imageWidth / width
   local rows = imageHeight / height
@@ -41,7 +48,14 @@ function Sprite:initializeQuads(width, height)
   self.quads = {}
   for y = 0, (rows - 1) do
     for x = 0, (cols - 1) do
-      local quad = love.graphics.newQuad(x * width, y * height, width, height, imageWidth, imageHeight)
+      local quad = love.graphics.newQuad(
+        x * width  + top,
+        y * height + left,
+        width,
+        height,
+        imageWidth,
+        imageHeight
+      )
       table.insert(self.quads, quad)
     end
   end
@@ -64,6 +78,10 @@ function Sprite:addAnimation(name, data)
   self.animations[name] = data
 
   return self
+end
+
+function Sprite:hasAnimation(animation)
+  return self.animations[animation] ~= nil
 end
 
 function Sprite:getWidth()
@@ -99,13 +117,15 @@ function SpriteInstance:initialize(sprite)
     :setAnimation('default')
 end
 
+function SpriteInstance:hasAnimation(animation)
+  return self.sprite:hasAnimation(animation)
+end
+
 function SpriteInstance:setAnimation(animation)
+  assert(self:hasAnimation(animation) == true, 'Sprite has no animation named: ' .. animation)
+
   if self.sprite.animations[animation] == self.animation then
     return self -- SpriteInstances is already using this animation
-  end
-
-  if self.sprite.animations[animation] == nil then
-    error('Sprite has no animation named "' .. animation .. '".')
   end
 
   self.animation = self.sprite.animations[animation]
@@ -117,7 +137,15 @@ function SpriteInstance:setAnimation(animation)
 end
 
 function SpriteInstance:animate(dt)
-  self.animationPosition = (self.animationPosition + (self.animation.frequency * dt)) % 1
+  local newPosition = self.animationPosition + (self.animation.frequency * dt)
+  if newPosition >= 1 then
+    if self.animation.onLoop == 'pauseAtEnd' then
+      newPosition = 0.99999
+    elseif self.animation.onLoop == 'pauseAtStart' then
+      newPosition = 0
+    end
+  end
+  self.animationPosition = newPosition % 1
   local frame = math.floor(self.animationPosition * #self.animation) + 1
   self.quad = self.sprite.quads[self.animation[frame]]
 
@@ -138,6 +166,10 @@ function SpriteInstance:setAnimationPosition(pos)
   self.animationPosition = pos % 1
 
   return self
+end
+
+function SpriteInstance:isMirrored()
+  return self.mirrored
 end
 
 function SpriteInstance:setMirrored(mirrored)
@@ -167,6 +199,19 @@ function SpriteInstance:draw(x, y)
   )
 
   return self
+end
+
+function SpriteInstance:getDrawRect()
+  local _, _, w, h = self:getViewport()
+  local x
+  if self.mirrored then
+    x = self.sprite.originX2 - w
+  else
+    x = self.sprite.originX * -1
+  end
+  local y = self.sprite.originY * -1
+
+  return x, y, w, h
 end
 
 function SpriteInstance:getViewport()
