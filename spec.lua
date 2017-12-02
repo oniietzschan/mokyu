@@ -39,7 +39,7 @@ describe('Mokyu:', function()
     end)
 
     it('It should set image', function()
-      assert.are.equals(image, sprite.image)
+      assert.are.equals(image, sprite:getImage())
     end)
 
     it('It should initialize quads', function ()
@@ -59,10 +59,11 @@ describe('Mokyu:', function()
     it('It should set correct originRect', function ()
       assert.are.same(width, sprite.width)
       assert.are.same(height, sprite.height)
-      assert.are.same(0, sprite.originX)
-      assert.are.same(0, sprite.originY)
-      assert.are.same(width,  sprite.originX2)
-      assert.are.same(height, sprite.originY2)
+      assert.are.same(0, sprite._originX)
+      assert.are.same(0, sprite._originY)
+      assert.are.same(width,  sprite._originX2)
+      assert.are.same(height, sprite._originY2)
+      assert.are.same({0, 0, width, height}, {sprite:getOriginRect()})
     end)
 
     it('It should create default animation', function()
@@ -109,7 +110,7 @@ describe('Mokyu:', function()
       local defaultAnimation = {frequency = 1, 1}
       local firstQuad = {0, 0, 16, 24, 64, 48}
 
-      assert.are.equals(sprite, spriteInstance.sprite)
+      assert.are.equals(sprite, spriteInstance:getSprite())
       assert.are.same(false, spriteInstance.mirrored)
 
       assert.are.same(defaultAnimation, spriteInstance.animation)

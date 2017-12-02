@@ -22,7 +22,7 @@ function Sprite:initialize(image, width, height, top, left)
   assert(type(top) == 'number', 'top must be a number')
   assert(type(left) == 'number', 'left must be a number')
 
-  self.image = image
+  self._image = image
   self.animations = {}
   self.width  = width
   self.height = height
@@ -34,14 +34,17 @@ function Sprite:initialize(image, width, height, top, left)
     :addAnimation('default', {frequency = 1, 1})
 end
 
-function Sprite:setImage(image)
-  self.image = image
+function Sprite:getImage(image)
+  return self._image
+end
 
+function Sprite:setImage(image)
+  self._image = image
   return self
 end
 
 function Sprite:_initializeQuads(width, height, top, left)
-  local imageWidth, imageHeight = self.image:getDimensions()
+  local imageWidth, imageHeight = self._image:getDimensions()
   local cols = imageWidth / width
   local rows = imageHeight / height
 
@@ -64,11 +67,10 @@ function Sprite:_initializeQuads(width, height, top, left)
 end
 
 function Sprite:setOriginRect(x, y, w, h)
-  self.originX = x
-  self.originY = y
-  self.originX2 = x + w
-  self.originY2 = y + h
-
+  self._originX = x
+  self._originY = y
+  self._originX2 = x + w
+  self._originY2 = y + h
   return self
 end
 
@@ -93,10 +95,10 @@ function Sprite:getHeight()
 end
 
 function Sprite:getOriginRect()
-  return self.originX,
-         self.originY,
-         self.originX2 - self.originX,
-         self.originY2 - self.originY
+  return self._originX,
+         self._originY,
+         self._originX2 - self._originX,
+         self._originY2 - self._originY
 end
 
 
@@ -110,7 +112,7 @@ function Sprite:newInstance()
 end
 
 function SpriteInstance:initialize(sprite)
-  self.sprite = sprite
+  self._sprite = sprite
   self.mirrored = false
 
   return self
@@ -118,17 +120,17 @@ function SpriteInstance:initialize(sprite)
 end
 
 function SpriteInstance:hasAnimation(animation)
-  return self.sprite:hasAnimation(animation)
+  return self._sprite:hasAnimation(animation)
 end
 
 function SpriteInstance:setAnimation(animation)
   assert(self:hasAnimation(animation) == true, 'Sprite has no animation named: ' .. animation)
 
-  if self.sprite.animations[animation] == self.animation then
+  if self._sprite.animations[animation] == self.animation then
     return self -- SpriteInstances is already using this animation
   end
 
-  self.animation = self.sprite.animations[animation]
+  self.animation = self._sprite.animations[animation]
   self.animationPosition = 0
   self:animate(0) -- Set the quad.
   self.animationName = animation
@@ -147,7 +149,7 @@ function SpriteInstance:animate(dt)
   end
   self.animationPosition = newPosition % 1
   local frame = math.floor(self.animationPosition * #self.animation) + 1
-  self.quad = self.sprite.quads[self.animation[frame]]
+  self.quad = self._sprite.quads[self.animation[frame]]
 
   return self
 end
@@ -158,13 +160,11 @@ end
 
 function SpriteInstance:setRandomAnimationPosition(pos)
   self:setAnimationPosition(rng:random())
-
   return self
 end
 
 function SpriteInstance:setAnimationPosition(pos)
   self.animationPosition = pos % 1
-
   return self
 end
 
@@ -174,22 +174,21 @@ end
 
 function SpriteInstance:setMirrored(mirrored)
   self.mirrored = mirrored
-
   return self
 end
 
 function SpriteInstance:draw(x, y)
-  local offsetX = self.sprite.originX * -1
-  local offsetY = self.sprite.originY * -1
+  local offsetX = self._sprite._originX * -1
+  local offsetY = self._sprite._originY * -1
   local scaleX = 1
 
   if self.mirrored then
-    offsetX = self.sprite.originX2
+    offsetX = self._sprite._originX2
     scaleX = -1
   end
 
   love.graphics.draw(
-    self.sprite.image,
+    self._sprite._image,
     self.quad,
     math.floor(x + offsetX + 0.5),
     math.floor(y + offsetY + 0.5),
@@ -205,11 +204,11 @@ function SpriteInstance:getDrawRect()
   local _, _, w, h = self:getViewport()
   local x
   if self.mirrored then
-    x = self.sprite.originX2 - w
+    x = self._sprite._originX2 - w
   else
-    x = self.sprite.originX * -1
+    x = self._sprite._originX * -1
   end
-  local y = self.sprite.originY * -1
+  local y = self._sprite._originY * -1
 
   return x, y, w, h
 end
@@ -218,12 +217,16 @@ function SpriteInstance:getViewport()
   return self.quad:getViewport()
 end
 
+function SpriteInstance:getSprite()
+  return self._sprite
+end
+
 function SpriteInstance:getWidth()
-  return self.sprite:getWidth()
+  return self._sprite:getWidth()
 end
 
 function SpriteInstance:getHeight()
-  return self.sprite:getHeight()
+  return self._sprite:getHeight()
 end
 
 
