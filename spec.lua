@@ -1,11 +1,6 @@
 require 'busted'
 
 _G.love = {
-  graphics = {
-    newQuad = spy.new(function(x1, y1, x2, y2, iw, ih)
-      return {x1, y1, x2, y2, iw, ih}
-    end),
-  },
   math = {
     newRandomGenerator = spy.new(function()
       return {
@@ -28,6 +23,16 @@ describe('Mokyu:', function()
       return 64, 48
     end,
   }
+
+  before_each(function()
+    _G.love.graphics = {
+      draw = spy.new(function()
+      end),
+      newQuad = spy.new(function(x1, y1, x2, y2, iw, ih)
+        return {x1, y1, x2, y2, iw, ih, quad = true}
+      end),
+    }
+  end)
 
   describe('When creating a new sprite:', function()
     local sprite
@@ -108,7 +113,7 @@ describe('Mokyu:', function()
 
     it('should set animation to correct defaults', function()
       local defaultAnimation = {frequency = 1, 1}
-      local firstQuad = {0, 0, 16, 24, 64, 48}
+      local firstQuad = {0, 0, 16, 24, 64, 48, quad = true}
 
       assert.are.equals(sprite, spriteInstance:getSprite())
       assert.are.same(false, spriteInstance.mirrored)
@@ -116,7 +121,7 @@ describe('Mokyu:', function()
       assert.are.same(defaultAnimation, spriteInstance.animation)
       assert.are.same('default', spriteInstance.animationName)
       assert.are.same(0, spriteInstance.animationPosition)
-      assert.are.same(firstQuad, spriteInstance.quad)
+      assert.are.same(firstQuad, spriteInstance:getQuad())
     end)
   end)
 
@@ -138,6 +143,55 @@ describe('Mokyu:', function()
 
       spriteInstance:setMirrored(false)
       assert.are.same(false, spriteInstance.mirrored)
+    end)
+  end)
+
+  describe('When drawing a SpriteInstance', function()
+    local sprite, spriteInstance, quad
+    local x, y = 1000, 2000
+
+    before_each(function()
+      sprite = Mokyu.newSprite(image, width, height)
+      spriteInstance = sprite:newInstance()
+      quad = spriteInstance:getQuad()
+    end)
+
+    it('draw should call love.graphics.draw with the expected arguments', function()
+      spriteInstance:draw(x, y)
+
+      assert.spy(love.graphics.draw).was.called(1)
+      assert.spy(love.graphics.draw).was.called_with(image, quad, x, y, 0, 1, 1)
+    end)
+
+    it('draw should call love.graphics.draw with the expected arguments when mirrored', function()
+      spriteInstance
+        :setMirrored(true)
+        :draw(x, y)
+
+      assert.spy(love.graphics.draw).was.called(1)
+      assert.spy(love.graphics.draw).was.called_with(image, quad, x + 16, y, 0, -1, 1)
+    end)
+
+    describe('When Sprite has custom originrect', function()
+      before_each(function()
+        sprite:setOriginRect(2, 4, 10, 20)
+      end)
+
+      it('draw should call love.graphics.draw with the expected arguments', function()
+        spriteInstance:draw(x, y)
+
+        assert.spy(love.graphics.draw).was.called(1)
+        assert.spy(love.graphics.draw).was.called_with(image, quad, x - 2, y - 4, 0, 1, 1)
+      end)
+
+      it('draw should call love.graphics.draw with the expected arguments when mirrored', function()
+        spriteInstance
+          :setMirrored(true)
+          :draw(x, y)
+
+        assert.spy(love.graphics.draw).was.called(1)
+        assert.spy(love.graphics.draw).was.called_with(image, quad, x + 12, y - 4, 0, -1, 1)
+      end)
     end)
   end)
 end)

@@ -176,7 +176,7 @@ function SpriteInstance:animate(dt)
   end
   self.animationPosition = newPosition % 1
   local frame = math.floor(self.animationPosition * #self.animation) + 1
-  self.quad = self._sprite.quads[self.animation[frame]]
+  self._quad = self._sprite.quads[self.animation[frame]]
 
   return self
 end
@@ -193,6 +193,10 @@ end
 function SpriteInstance:setAnimationPosition(pos)
   self.animationPosition = pos % 1
   return self
+end
+
+function SpriteInstance:getQuad()
+  return self._quad
 end
 
 function SpriteInstance:isMirrored()
@@ -216,7 +220,7 @@ function SpriteInstance:draw(x, y)
 
   love.graphics.draw(
     self._sprite._image,
-    self.quad,
+    self._quad,
     math.floor(x + offsetX + 0.5),
     math.floor(y + offsetY + 0.5),
     0,
@@ -241,7 +245,7 @@ function SpriteInstance:getDrawRect()
 end
 
 function SpriteInstance:getViewport()
-  return self.quad:getViewport()
+  return self._quad:getViewport()
 end
 
 function SpriteInstance:getSprite()
