@@ -92,13 +92,16 @@ spriteInstance:animate(dt)
 spriteInstance:setAnimation('attack')
 
 -- Gets the name of the current animation.
-currentAnimation = spriteInstance:getAnimationName()
+currentAnimation = spriteInstance:getAnimation()
 
 -- Checks whether parent sprite has named animation.
 hasJumpAnimation = spriteInstance:hasAnimation('attack')
 
 -- Sets the animation position. Position should be a number >= 0 and < 1.
 spriteInstance:setAnimationPosition(0.5)
+
+-- Get the current animation position.
+position = spriteInstance:getAnimationPosition()
 
 -- Sets whether the sprite instance should be draw mirrored horizontally.
 spriteInstance:setMirrored(true)

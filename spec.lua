@@ -67,7 +67,7 @@ describe('Mokyu:', function()
       local expected = {
         default = {frequency = 1, 1},
       }
-      assert.are.same(expected, sprite.animations)
+      assert.are.same(expected, sprite._animations)
     end)
   end)
 
@@ -112,11 +112,11 @@ describe('Mokyu:', function()
       local firstQuad = {0, 0, 16, 24, 64, 48, quad = true}
 
       assert.are.equals(sprite, spriteInstance:getSprite())
-      assert.are.same(false, spriteInstance.mirrored)
+      assert.are.same(false, spriteInstance:isMirrored())
 
-      assert.are.same(defaultAnimation, spriteInstance.animation)
-      assert.are.same('default', spriteInstance.animationName)
-      assert.are.same(0, spriteInstance.animationPosition)
+      assert.are.same(defaultAnimation, spriteInstance._animation)
+      assert.are.same('default', spriteInstance:getAnimation())
+      assert.are.same(0, spriteInstance:getAnimationPosition())
       assert.are.same(firstQuad, spriteInstance:getQuad())
     end)
   end)
@@ -129,28 +129,32 @@ describe('Mokyu:', function()
       spriteInstance = sprite:newInstance()
     end)
 
-    it('getAnimationName should return name of current animation', function()
-      assert.are.same('default', spriteInstance:getAnimationName())
+    it('getAnimation should return name of current animation', function()
+      assert.are.same('default', spriteInstance:getAnimation())
     end)
 
     it('setAnimationPosition should set specified animation position', function()
       spriteInstance:setAnimationPosition(0.75)
-      assert.are.same(0.75, spriteInstance.animationPosition)
+      assert.are.same(0.75, spriteInstance:getAnimationPosition())
     end)
 
     it('setAnimationPosition should only allow range between 0 and 0.9999...', function()
       spriteInstance:setAnimationPosition(0)
-      assert.are.same(0, spriteInstance.animationPosition)
+      assert.are.same(0, spriteInstance:getAnimationPosition())
 
       spriteInstance:setAnimationPosition(0.5)
-      assert.are.same(0.5, spriteInstance.animationPosition)
+      assert.are.same(0.5, spriteInstance:getAnimationPosition())
 
       spriteInstance:setAnimationPosition(0.9999)
-      assert.are.same(0.9999, spriteInstance.animationPosition)
+      assert.are.same(0.9999, spriteInstance:getAnimationPosition())
 
       assert.error(function() spriteInstance:setAnimationPosition(-1) end)
       assert.error(function() spriteInstance:setAnimationPosition(1) end)
       assert.error(function() spriteInstance:setAnimationPosition(256) end)
+    end)
+
+    it('setAnimationPosition should only allow number', function()
+      assert.error(function() spriteInstance:setAnimationPosition(false) end)
     end)
 
     it('setMirrored should update mirrored attribute', function()

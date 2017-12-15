@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.2.0',
+  _VERSION     = 'mokyu v0.3.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[
@@ -46,7 +46,7 @@ function Sprite:initialize(image, width, height, top, left)
   assert(type(left) == 'number', 'left must be a number')
 
   self._image = image
-  self.animations = {}
+  self._animations = {}
   self.width  = width
   self.height = height
 
@@ -110,13 +110,13 @@ end
 function Sprite:addAnimation(name, data)
   data.frequency = data.frequency or 1
 
-  self.animations[name] = data
+  self._animations[name] = data
 
   return self
 end
 
 function Sprite:hasAnimation(animation)
-  return self.animations[animation] ~= nil
+  return self._animations[animation] ~= nil
 end
 
 function Sprite:getWidth()
@@ -143,15 +143,15 @@ end
 
 function SpriteInstance:initialize(sprite)
   self._sprite = sprite
-  self.mirrored = false
+  self._mirrored = false
 
   return self
     :setAnimation('default')
     :setRotation(0)
 end
 
-function SpriteInstance:getAnimationName()
-  return self.animationName
+function SpriteInstance:getAnimation()
+  return self._animationName
 end
 
 function SpriteInstance:hasAnimation(animation)
@@ -161,37 +161,41 @@ end
 function SpriteInstance:setAnimation(animation)
   assert(self:hasAnimation(animation) == true, 'Sprite has no animation named: ' .. animation)
 
-  if self._sprite.animations[animation] == self.animation then
+  if self._sprite._animations[animation] == self._animation then
     return self -- SpriteInstances is already using this animation
   end
 
-  self.animation = self._sprite.animations[animation]
-  self.animationPosition = 0
+  self._animation = self._sprite._animations[animation]
+  self._animationPosition = 0
   self:animate(0) -- Set the quad.
-  self.animationName = animation
+  self._animationName = animation
 
   return self
 end
 
 function SpriteInstance:animate(dt)
-  local newPosition = self.animationPosition + (self.animation.frequency * dt)
+  local newPosition = self._animationPosition + (self._animation.frequency * dt)
   if newPosition >= 1 then
-    if self.animation.onLoop == 'pauseAtEnd' then
+    if self._animation.onLoop == 'pauseAtEnd' then
       newPosition = 0.99999
-    elseif self.animation.onLoop == 'pauseAtStart' then
+    elseif self._animation.onLoop == 'pauseAtStart' then
       newPosition = 0
     end
   end
-  self.animationPosition = newPosition % 1
-  local frame = math.floor(self.animationPosition * #self.animation) + 1
-  self._quad = self._sprite.quads[self.animation[frame]]
+  self._animationPosition = newPosition % 1
+  local frame = math.floor(self._animationPosition * #self._animation) + 1
+  self._quad = self._sprite.quads[self._animation[frame]]
 
   return self
 end
 
+function SpriteInstance:getAnimationPosition()
+  return self._animationPosition
+end
+
 function SpriteInstance:setAnimationPosition(pos)
-  assert(pos >= 0 and pos < 1, 'animation position must be >= 0 and < 1.')
-  self.animationPosition = pos
+  assert(type(pos) == 'number' and pos >= 0 and pos < 1, 'animation position must be a number and >= 0 and < 1.')
+  self._animationPosition = pos
   return self
 end
 
@@ -200,12 +204,12 @@ function SpriteInstance:getQuad()
 end
 
 function SpriteInstance:isMirrored()
-  return self.mirrored
+  return self._mirrored
 end
 
 function SpriteInstance:setMirrored(mirrored)
   assert(type(mirrored) == 'boolean', 'Mirrored value must be a boolean')
-  self.mirrored = mirrored
+  self._mirrored = mirrored
   return self
 end
 
@@ -223,12 +227,12 @@ end
 
 function SpriteInstance:draw(x, y)
   local sprite = self._sprite
-  local scaleX = (self.mirrored == true) and -1 or 1
+  local scaleX = (self._mirrored == true) and -1 or 1
 
   -- Round origin differently depending on whether sprite is mirrored or not.
   -- This makes it so that non-integer origins still cause the sprite to have their top, left corner pinned at (x, y).
   local roundedOriginX
-  if self.mirrored then
+  if self._mirrored then
     roundedOriginX = math.ceil(sprite._originX + sprite._originHalfW - 0.5)
   else
     roundedOriginX = math.floor(sprite._originX + sprite._originHalfW + 0.5)
@@ -253,7 +257,7 @@ end
 function SpriteInstance:getDrawRect()
   local w, h = self:getDimensions()
   local x
-  if self.mirrored then
+  if self._mirrored then
     x = self._sprite._originX2 - w
   else
     x = self._sprite._originX * -1
