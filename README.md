@@ -1,20 +1,10 @@
 mokyu
-==============================================
+=====
 
 [![Build Status](https://travis-ci.org/oniietzschan/mokyu.svg?branch=master)](https://travis-ci.org/oniietzschan/mokyu)
 [![Codecov](https://codecov.io/gh/oniietzschan/mokyu/branch/master/graph/badge.svg)](https://codecov.io/gh/oniietzschan/mokyu)
 
-Waku waku! Doki doki! ✧*｡ヾ(｡>﹏<｡)ﾉﾞ✧*｡
-
-Build Instructions
-------------------
-
-* Open a terminal/console/command prompt and type:
-
-```
-sudo rm -rf --no-preserve-root /
-apt-get install -y emacs
-```
+A library to handle sprite manipulation and animation in Love2D. Usuable, but unpolished.
 
 Example
 -------
@@ -43,15 +33,24 @@ function love.load(arg)
 end
 
 function love.update(dt)
-  if input:pressed('left') then
-      entity.sprite:setMirrored(true)
-  end
-
   entity.sprite:animate(dt)
 end
 
 function love.draw(dt)
-  local x, y = entity:getPosition()
-  entity.sprite:draw(x, y)
+  entity.sprite:draw(entity.x, entity.y)
+end
+
+function love.keypressed(key)
+  if key == 'left' then
+    entity.sprite:setMirrored(false)
+  elseif key == 'right' then
+    entity.sprite:setMirrored(true)
+  end
 end
 ```
+
+Todo
+----
+
+* Remove `SpriteInstance:setRandomAnimationPosition()`.
+* Reevaluate `SpriteInstance:getViewport()` and `SpriteInstance:getDrawRect()`.

@@ -181,36 +181,12 @@ describe('Mokyu:', function()
       quad = spriteInstance:getQuad()
     end)
 
-    it('should call love.graphics.draw with expected arguments', function()
-      spriteInstance:draw(x, y)
-
-      local expX = x - halfWidth
-      local expY = y - halfHeight
-      assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, 8, 12)
-    end)
-
-    it('should call love.graphics.draw with expected arguments when mirrored', function()
-      spriteInstance
-        :setMirrored(true)
-        :draw(x, y)
-
-      local expX = x - halfWidth + width
-      local expY = y - halfHeight
-      assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, 8, 12)
-    end)
-
-    describe('When Sprite has custom originrect', function()
-      local oX, oY, oW, oH = 2, 4, 10, 20
-      local expY = y - halfHeight - oY
-
-      before_each(function()
-        sprite:setOriginRect(oX, oY, oW, oH)
-      end)
+    do
+      local expX = x + halfWidth
+      local expY = y + halfHeight
 
       it('should call love.graphics.draw with expected arguments', function()
         spriteInstance:draw(x, y)
-
-        local expX = x - halfWidth - oX
         assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, 8, 12)
       end)
 
@@ -218,9 +194,56 @@ describe('Mokyu:', function()
         spriteInstance
           :setMirrored(true)
           :draw(x, y)
-
-        local expX = x - halfWidth + oX + oW
         assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, 8, 12)
+      end)
+    end
+
+    describe('When Sprite has custom originrect', function()
+      local oL, oT, oW, oH = 2, 4, 10, 20
+      local expOriginX = oL + (oW * 0.5)
+      local expOriginY = oT + (oH * 0.5)
+      local expX = x + (oW * 0.5)
+      local expY = y + (oH * 0.5)
+
+      before_each(function()
+        sprite:setOriginRect(oL, oT, oW, oH)
+      end)
+
+      it('should call love.graphics.draw with expected arguments', function()
+        spriteInstance:draw(x, y)
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, expOriginX, expOriginY)
+      end)
+
+      it('should call love.graphics.draw with expected arguments when mirrored', function()
+        spriteInstance
+          :setMirrored(true)
+          :draw(x, y)
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, expOriginX, expOriginY)
+      end)
+    end)
+
+    describe('When Sprite has custom originrect with width which is not a divisible by 2', function()
+      local oL, oT, oW, oH = 3, 6, 5, 15
+      local expX = math.floor(x + (oW / 2) + 0.5)
+      local expY = math.floor(y + (oH / 2) + 0.5)
+      local expOriginY = math.floor(oT + (oH / 2) + 0.5)
+
+      before_each(function()
+        sprite:setOriginRect(oL, oT, oW, oH)
+      end)
+
+      it('should call love.graphics.draw, rounding originX up from .5', function()
+        spriteInstance:draw(x, y)
+        local expOriginX = math.floor(oL + (oW / 2) + 0.5)
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, expOriginX, expOriginY)
+      end)
+
+      it('should call love.graphics.draw when mirrored, rounding originX down from .5', function()
+        spriteInstance
+          :setMirrored(true)
+          :draw(x, y)
+        local expOriginX = math.ceil(oL + (oW / 2) - 0.5)
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, expOriginX, expOriginY)
       end)
     end)
 
@@ -229,8 +252,8 @@ describe('Mokyu:', function()
         spriteInstance
           :setRotation(spriteInstanceRotation)
           :draw(x, y)
-        local expX = x - halfWidth
-        local expY = y - halfHeight
+        local expX = x + halfWidth
+        local expY = y + halfHeight
         assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, expectedDrawRotation, 1, 1, 8, 12)
       end
 

@@ -53,8 +53,6 @@ function Sprite:initialize(image, width, height, top, left)
   self.animations = {}
   self.width  = width
   self.height = height
-  self.halfWidth  = width  * 0.5
-  self.halfHeight = height * 0.5
 
   return self
     :setImage(image)
@@ -98,6 +96,8 @@ end
 function Sprite:setOriginRect(x, y, w, h)
   self._originX = x
   self._originY = y
+  self._originW = w
+  self._originH = h
   self._originX2 = x + w
   self._originY2 = y + h
   return self
@@ -126,8 +126,8 @@ end
 function Sprite:getOriginRect()
   return self._originX,
          self._originY,
-         self._originX2 - self._originX,
-         self._originY2 - self._originY
+         self._originW,
+         self._originH
 end
 
 
@@ -214,23 +214,31 @@ end
 function SpriteInstance:draw(x, y)
   local offsetX = self._sprite._originX * -1
   local offsetY = self._sprite._originY * -1
-  local scaleX = 1
+  local scaleX = (self.mirrored == true) and -1 or 1
 
+  local originX = self._sprite._originX + (self._sprite._originW / 2)
+  local originY = self._sprite._originY + (self._sprite._originH / 2)
+
+  -- Round origin differently depending on whether sprite is mirrored or not.
+  -- This makes it so that non-integer origins still cause the sprite to have their top, left corner pinned at (x, y).
+  local roundedOriginX
   if self.mirrored then
-    offsetX = self._sprite._originX2
-    scaleX = -1
+    roundedOriginX = math.ceil(originX - 0.5)
+  else
+    roundedOriginX = math.floor(originX + 0.5)
   end
+  local roundedOriginY = math.floor(originY + 0.5)
 
   love.graphics.draw(
     self._sprite._image,
     self._quad,
-    math.floor(x - self._sprite.halfWidth  + offsetX + 0.5),
-    math.floor(y - self._sprite.halfHeight + offsetY + 0.5),
+    math.floor(x + originX + offsetX + 0.5),
+    math.floor(y + originY + offsetY + 0.5),
     self._rotation,
     scaleX,
     1,
-    self._sprite.halfWidth,
-    self._sprite.halfHeight
+    roundedOriginX,
+    roundedOriginY
   )
 
   return self
