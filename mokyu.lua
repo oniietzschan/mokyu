@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.1.0',
+  _VERSION     = 'mokyu v0.2.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[

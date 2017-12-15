@@ -2,6 +2,12 @@ require 'busted'
 
 local Mokyu = require 'mokyu'
 
+local NINETY_DEGREES              = math.pi * 0.5
+local ONE_HUNDRED_EIGHTY_DEGREES  = math.pi * 1.0
+local TWO_HUNDRED_SEVENTY_DEGREES = math.pi * 1.5
+local THREE_HUNDRED_SIXTY_DEGREES = math.pi * 2.0
+local FOUR_HUNDRED_FIFTY_DEGREES  = math.pi * 2.5
+
 describe('Mokyu:', function()
   local width = 16
   local height = 24
@@ -73,11 +79,15 @@ describe('Mokyu:', function()
     end)
 
     it('getWidth should return width', function()
-      assert.are.same(16, sprite:getWidth())
+      assert.are.same(width, sprite:getWidth())
     end)
 
     it('getHeight should return height', function()
-      assert.are.same(24, sprite:getHeight())
+      assert.are.same(height, sprite:getHeight())
+    end)
+
+    it('getDimensions should return width and height', function()
+      assert.are.same({width, height}, {sprite:getDimensions()})
     end)
 
     it('getOriginRect should return correct values', function()
@@ -149,6 +159,40 @@ describe('Mokyu:', function()
 
       spriteInstance:setMirrored(false)
       assert.are.same(false, spriteInstance:isMirrored())
+    end)
+
+    it('setRotation should set the rotation', function()
+      spriteInstance:setRotation(0)
+      assert.are.same(0, spriteInstance:getRotation())
+
+      spriteInstance:setRotation(NINETY_DEGREES)
+      assert.are.same(NINETY_DEGREES, spriteInstance:getRotation())
+
+      spriteInstance:setRotation(ONE_HUNDRED_EIGHTY_DEGREES)
+      assert.are.same(ONE_HUNDRED_EIGHTY_DEGREES, spriteInstance:getRotation())
+
+      spriteInstance:setRotation(TWO_HUNDRED_SEVENTY_DEGREES)
+      assert.are.same(TWO_HUNDRED_SEVENTY_DEGREES, spriteInstance:getRotation())
+    end)
+
+    it('setRotation should set the rotato modulo Tau', function()
+      spriteInstance:setRotation(THREE_HUNDRED_SIXTY_DEGREES)
+      assert.are.same(0, spriteInstance:getRotation())
+
+      spriteInstance:setRotation(FOUR_HUNDRED_FIFTY_DEGREES)
+      assert.are.same(NINETY_DEGREES, spriteInstance:getRotation())
+    end)
+
+    it('getWidth should return width of parent Sprite', function()
+      assert.are.same(sprite:getWidth(), spriteInstance:getWidth())
+    end)
+
+    it('getHeight should return height of parent Sprite', function()
+      assert.are.same(sprite:getHeight(), spriteInstance:getHeight())
+    end)
+
+    it('getDimensions should return width and height of parent Sprite', function()
+      assert.are.same({sprite:getDimensions()}, {spriteInstance:getDimensions()})
     end)
   end)
 
@@ -239,23 +283,15 @@ describe('Mokyu:', function()
       end
 
       it('should call love.graphics.draw with expected arguments when rotated 90 degrees', function()
-        local NINETY_DEGREES = math.pi * 0.5
         helpTestFn(NINETY_DEGREES, NINETY_DEGREES)
       end)
 
       it('should call love.graphics.draw with expected arguments when rotated 180 degrees', function()
-        local ONE_HUNDRED_EIGHTY_DEGREES  = math.pi * 1.0
         helpTestFn(ONE_HUNDRED_EIGHTY_DEGREES, ONE_HUNDRED_EIGHTY_DEGREES)
       end)
 
       it('should call love.graphics.draw with expected arguments when rotated 270 degrees', function()
-        local TWO_HUNDRED_SEVENTY_DEGREES  = math.pi * 1.5
         helpTestFn(TWO_HUNDRED_SEVENTY_DEGREES, TWO_HUNDRED_SEVENTY_DEGREES)
-      end)
-
-      it('should call love.graphics.draw with expected arguments when rotated 360 degrees', function()
-        local THREE_HUNDRED_SIXTY_DEGREES  = math.pi * 2
-        helpTestFn(THREE_HUNDRED_SIXTY_DEGREES, 0)
       end)
     end)
   end)
