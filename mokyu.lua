@@ -93,13 +93,21 @@ function Sprite:_initializeQuads(width, height, top, left)
   return self
 end
 
+function Sprite:getOriginRect()
+  return self._originX,
+         self._originY,
+         self._originW,
+         self._originH
+end
+
 function Sprite:setOriginRect(x, y, w, h)
   self._originX = x
   self._originY = y
   self._originW = w
   self._originH = h
+  self._originHalfW = self._originW / 2
+  self._originHalfH = self._originH / 2
   self._originX2 = x + w
-  self._originY2 = y + h
   return self
 end
 
@@ -123,11 +131,8 @@ function Sprite:getHeight()
   return self.height
 end
 
-function Sprite:getOriginRect()
-  return self._originX,
-         self._originY,
-         self._originW,
-         self._originH
+function Sprite:getDimensions()
+  return self.width, self.height
 end
 
 
@@ -147,6 +152,10 @@ function SpriteInstance:initialize(sprite)
   return self
     :setAnimation('default')
     :setRotation(0)
+end
+
+function SpriteInstance:getAnimationName()
+  return self.animationName
 end
 
 function SpriteInstance:hasAnimation(animation)
@@ -184,10 +193,6 @@ function SpriteInstance:animate(dt)
   return self
 end
 
-function SpriteInstance:getAnimationName()
-  return self.animationName
-end
-
 function SpriteInstance:setRandomAnimationPosition()
   return self:setAnimationPosition(rng:random() % 1)
 end
@@ -211,29 +216,36 @@ function SpriteInstance:setMirrored(mirrored)
   return self
 end
 
-function SpriteInstance:draw(x, y)
-  local offsetX = self._sprite._originX * -1
-  local offsetY = self._sprite._originY * -1
-  local scaleX = (self.mirrored == true) and -1 or 1
+function SpriteInstance:getRotation(rot)
+  return self._rotation
+end
 
-  local originX = self._sprite._originX + (self._sprite._originW / 2)
-  local originY = self._sprite._originY + (self._sprite._originH / 2)
+local TAU = math.pi * 2
+
+function SpriteInstance:setRotation(rot)
+  self._rotation = rot % TAU
+  return self
+end
+
+function SpriteInstance:draw(x, y)
+  local sprite = self._sprite
+  local scaleX = (self.mirrored == true) and -1 or 1
 
   -- Round origin differently depending on whether sprite is mirrored or not.
   -- This makes it so that non-integer origins still cause the sprite to have their top, left corner pinned at (x, y).
   local roundedOriginX
   if self.mirrored then
-    roundedOriginX = math.ceil(originX - 0.5)
+    roundedOriginX = math.ceil(sprite._originX + sprite._originHalfW - 0.5)
   else
-    roundedOriginX = math.floor(originX + 0.5)
+    roundedOriginX = math.floor(sprite._originX + sprite._originHalfW + 0.5)
   end
-  local roundedOriginY = math.floor(originY + 0.5)
+  local roundedOriginY = math.floor(sprite._originY + sprite._originHalfH + 0.5)
 
   love.graphics.draw(
-    self._sprite._image,
+    sprite._image,
     self._quad,
-    math.floor(x + originX + offsetX + 0.5),
-    math.floor(y + originY + offsetY + 0.5),
+    math.floor(x + sprite._originHalfW + 0.5),
+    math.floor(y + sprite._originHalfH + 0.5),
     self._rotation,
     scaleX,
     1,
@@ -245,7 +257,7 @@ function SpriteInstance:draw(x, y)
 end
 
 function SpriteInstance:getDrawRect()
-  local _, _, w, h = self:getViewport()
+  local w, h = self:getDimensions()
   local x
   if self.mirrored then
     x = self._sprite._originX2 - w
@@ -253,12 +265,7 @@ function SpriteInstance:getDrawRect()
     x = self._sprite._originX * -1
   end
   local y = self._sprite._originY * -1
-
   return x, y, w, h
-end
-
-function SpriteInstance:getViewport()
-  return self._quad:getViewport()
 end
 
 function SpriteInstance:getSprite()
@@ -273,15 +280,8 @@ function SpriteInstance:getHeight()
   return self._sprite:getHeight()
 end
 
-function SpriteInstance:getRotation(rot)
-  return self._rotation
-end
-
-local TAU = math.pi * 2
-
-function SpriteInstance:setRotation(rot)
-  self._rotation = rot % TAU
-  return self
+function SpriteInstance:getDimensions()
+  return self._sprite:getDimensions()
 end
 
 
