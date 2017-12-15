@@ -125,13 +125,9 @@ w, h = spriteInstance:getDimensions()
 
 -- MAYBE DEPRECIATED????
 x, y, w, h = spriteInstance:getDrawRect()
-
--- DEPRECIATED
-spriteInstance:setRandomAnimationPosition()
 ```
 
 Todo
 ----
 
-* Remove `SpriteInstance:setRandomAnimationPosition()`.
 * Reevaluate `SpriteInstance:getDrawRect()`.

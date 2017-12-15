@@ -1,17 +1,5 @@
 require 'busted'
 
-_G.love = {
-  math = {
-    newRandomGenerator = spy.new(function()
-      return {
-        random = function()
-          return 0.5
-        end,
-      }
-    end),
-  }
-}
-
 local Mokyu = require 'mokyu'
 
 describe('Mokyu:', function()
@@ -27,12 +15,14 @@ describe('Mokyu:', function()
   }
 
   before_each(function()
-    _G.love.graphics = {
-      draw = spy.new(function()
-      end),
-      newQuad = spy.new(function(x1, y1, x2, y2, iw, ih)
-        return {x1, y1, x2, y2, iw, ih, quad = true}
-      end),
+    _G.love = {
+      graphics = {
+        draw = spy.new(function()
+        end),
+        newQuad = spy.new(function(x1, y1, x2, y2, iw, ih)
+          return {x1, y1, x2, y2, iw, ih, quad = true}
+        end),
+      },
     }
   end)
 
@@ -131,11 +121,6 @@ describe('Mokyu:', function()
 
     it('getAnimationName should return name of current animation', function()
       assert.are.same('default', spriteInstance:getAnimationName())
-    end)
-
-    it('setRandomAnimationPosition should seek to a random position in animation', function()
-      spriteInstance:setRandomAnimationPosition()
-      assert.are.same(0.5, spriteInstance.animationPosition)
     end)
 
     it('setAnimationPosition should set specified animation position', function()
