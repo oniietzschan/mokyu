@@ -188,13 +188,13 @@ function SpriteInstance:getAnimationName()
   return self.animationName
 end
 
-function SpriteInstance:setRandomAnimationPosition(pos)
-  self:setAnimationPosition(rng:random())
-  return self
+function SpriteInstance:setRandomAnimationPosition()
+  return self:setAnimationPosition(rng:random() % 1)
 end
 
 function SpriteInstance:setAnimationPosition(pos)
-  self.animationPosition = pos % 1
+  assert(pos >= 0 and pos < 1, 'animation position must be >= 0 and < 1.')
+  self.animationPosition = pos
   return self
 end
 

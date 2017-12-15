@@ -137,12 +137,37 @@ describe('Mokyu:', function()
       assert.are.same('default', spriteInstance:getAnimationName())
     end)
 
+    it('setRandomAnimationPosition should seek to a random position in animation', function()
+      spriteInstance:setRandomAnimationPosition()
+      assert.are.same(0.5, spriteInstance.animationPosition)
+    end)
+
+    it('setAnimationPosition should set specified animation position', function()
+      spriteInstance:setAnimationPosition(0.75)
+      assert.are.same(0.75, spriteInstance.animationPosition)
+    end)
+
+    it('setAnimationPosition should only allow range between 0 and 0.9999...', function()
+      spriteInstance:setAnimationPosition(0)
+      assert.are.same(0, spriteInstance.animationPosition)
+
+      spriteInstance:setAnimationPosition(0.5)
+      assert.are.same(0.5, spriteInstance.animationPosition)
+
+      spriteInstance:setAnimationPosition(0.9999)
+      assert.are.same(0.9999, spriteInstance.animationPosition)
+
+      assert.error(function() spriteInstance:setAnimationPosition(-1) end)
+      assert.error(function() spriteInstance:setAnimationPosition(1) end)
+      assert.error(function() spriteInstance:setAnimationPosition(256) end)
+    end)
+
     it('setMirrored should update mirrored attribute', function()
       spriteInstance:setMirrored(true)
-      assert.are.same(true, spriteInstance.mirrored)
+      assert.are.same(true, spriteInstance:isMirrored())
 
       spriteInstance:setMirrored(false)
-      assert.are.same(false, spriteInstance.mirrored)
+      assert.are.same(false, spriteInstance:isMirrored())
     end)
   end)
 
