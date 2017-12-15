@@ -17,6 +17,8 @@ local Mokyu = require 'mokyu'
 describe('Mokyu:', function()
   local width = 16
   local height = 24
+  local halfWidth = 8
+  local halfHeight = 12
 
   local image = {
     getDimensions = function()
@@ -38,8 +40,6 @@ describe('Mokyu:', function()
     local sprite
 
     before_each(function()
-      spy.on(love.graphics, 'newQuad')
-
       sprite = Mokyu.newSprite(image, width, height)
     end)
 
@@ -48,15 +48,15 @@ describe('Mokyu:', function()
     end)
 
     it('It should initialize quads', function ()
-      assert.spy(love.graphics.newQuad).was.called(8)
-      assert.spy(love.graphics.newQuad).was.called_with( 0,  0, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with(16,  0, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with(32,  0, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with(48,  0, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with( 0, 24, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with(16, 24, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with(32, 24, 16, 24, 64, 48)
-      assert.spy(love.graphics.newQuad).was.called_with(48, 24, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called(8)
+      assert.spy(_G.love.graphics.newQuad).was.called_with( 0,  0, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with(16,  0, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with(32,  0, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with(48,  0, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with( 0, 24, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with(16, 24, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with(32, 24, 16, 24, 64, 48)
+      assert.spy(_G.love.graphics.newQuad).was.called_with(48, 24, 16, 24, 64, 48)
 
       assert.are.same(8, #sprite.quads)
     end)
@@ -146,7 +146,7 @@ describe('Mokyu:', function()
     end)
   end)
 
-  describe('When drawing a SpriteInstance', function()
+  describe('When calling SpriteInstance:draw()', function()
     local sprite, spriteInstance, quad
     local x, y = 1000, 2000
 
@@ -156,41 +156,77 @@ describe('Mokyu:', function()
       quad = spriteInstance:getQuad()
     end)
 
-    it('draw should call love.graphics.draw with the expected arguments', function()
+    it('should call love.graphics.draw with expected arguments', function()
       spriteInstance:draw(x, y)
 
-      assert.spy(love.graphics.draw).was.called(1)
-      assert.spy(love.graphics.draw).was.called_with(image, quad, x, y, 0, 1, 1)
+      local expX = x - halfWidth
+      local expY = y - halfHeight
+      assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, 8, 12)
     end)
 
-    it('draw should call love.graphics.draw with the expected arguments when mirrored', function()
+    it('should call love.graphics.draw with expected arguments when mirrored', function()
       spriteInstance
         :setMirrored(true)
         :draw(x, y)
 
-      assert.spy(love.graphics.draw).was.called(1)
-      assert.spy(love.graphics.draw).was.called_with(image, quad, x + 16, y, 0, -1, 1)
+      local expX = x - halfWidth + width
+      local expY = y - halfHeight
+      assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, 8, 12)
     end)
 
     describe('When Sprite has custom originrect', function()
+      local oX, oY, oW, oH = 2, 4, 10, 20
+      local expY = y - halfHeight - oY
+
       before_each(function()
-        sprite:setOriginRect(2, 4, 10, 20)
+        sprite:setOriginRect(oX, oY, oW, oH)
       end)
 
-      it('draw should call love.graphics.draw with the expected arguments', function()
+      it('should call love.graphics.draw with expected arguments', function()
         spriteInstance:draw(x, y)
 
-        assert.spy(love.graphics.draw).was.called(1)
-        assert.spy(love.graphics.draw).was.called_with(image, quad, x - 2, y - 4, 0, 1, 1)
+        local expX = x - halfWidth - oX
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, 8, 12)
       end)
 
-      it('draw should call love.graphics.draw with the expected arguments when mirrored', function()
+      it('should call love.graphics.draw with expected arguments when mirrored', function()
         spriteInstance
           :setMirrored(true)
           :draw(x, y)
 
-        assert.spy(love.graphics.draw).was.called(1)
-        assert.spy(love.graphics.draw).was.called_with(image, quad, x + 12, y - 4, 0, -1, 1)
+        local expX = x - halfWidth + oX + oW
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, 8, 12)
+      end)
+    end)
+
+    describe('When rotating sprite', function()
+      local helpTestFn = function(spriteInstanceRotation, expectedDrawRotation)
+        spriteInstance
+          :setRotation(spriteInstanceRotation)
+          :draw(x, y)
+        local expX = x - halfWidth
+        local expY = y - halfHeight
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, expectedDrawRotation, 1, 1, 8, 12)
+      end
+
+      it('should call love.graphics.draw with expected arguments when rotated 90 degrees', function()
+        local NINETY_DEGREES = math.pi * 0.5
+        helpTestFn(NINETY_DEGREES, NINETY_DEGREES)
+      end)
+
+      it('should call love.graphics.draw with expected arguments when rotated 180 degrees', function()
+        local ONE_HUNDRED_EIGHTY_DEGREES  = math.pi * 1.0
+        helpTestFn(ONE_HUNDRED_EIGHTY_DEGREES, ONE_HUNDRED_EIGHTY_DEGREES)
+      end)
+
+      it('should call love.graphics.draw with expected arguments when rotated 270 degrees', function()
+        local TWO_HUNDRED_SEVENTY_DEGREES  = math.pi * 1.5
+        helpTestFn(TWO_HUNDRED_SEVENTY_DEGREES, TWO_HUNDRED_SEVENTY_DEGREES)
+      end)
+
+      it('should call love.graphics.draw with expected arguments when rotated 360 degrees', function()
+        local THREE_HUNDRED_SIXTY_DEGREES  = math.pi * 2
+        helpTestFn(THREE_HUNDRED_SIXTY_DEGREES, 0)
       end)
     end)
   end)

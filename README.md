@@ -2,7 +2,7 @@ mokyu
 ==============================================
 
 [![Build Status](https://travis-ci.org/oniietzschan/mokyu.svg?branch=master)](https://travis-ci.org/oniietzschan/mokyu)
-[![Coverage Status](https://coveralls.io/repos/github/oniietzschan/mokyu/badge.svg?branch=master)](https://coveralls.io/github/oniietzschan/mokyu?branch=master)
+[![Codecov](https://codecov.io/gh/oniietzschan/mokyu/branch/master/graph/badge.svg)](https://codecov.io/gh/oniietzschan/mokyu)
 
 Waku waku! Doki doki! ✧*｡ヾ(｡>﹏<｡)ﾉﾞ✧*｡
 

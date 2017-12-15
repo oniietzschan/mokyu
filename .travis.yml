@@ -14,19 +14,15 @@ before_install:
   - export PATH=$PATH:$PWD/lua_install/bin
 
 install:
-  # - luarocks install luacheck
   - luarocks install busted
+  - luarocks install luacheck
   - luarocks install luacov
-  - luarocks install luacov-coveralls
 
 script:
-  # - luacheck --std max+busted *.lua spec
+  - luacheck --no-unused-args --std max+love   mokyu.lua
+  - luacheck --no-unused-args --std max+busted spec.lua
   - busted --verbose --coverage spec.lua
 
-notifications:
-  email:
-    on_success: change
-    on_failure: always
-
 after_success:
-  - luacov-coveralls -e $TRAVIS_BUILD_DIR/lua_install
+  - luacov
+  - bash <(curl -s https://codecov.io/bash)

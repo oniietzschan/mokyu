@@ -53,6 +53,8 @@ function Sprite:initialize(image, width, height, top, left)
   self.animations = {}
   self.width  = width
   self.height = height
+  self.halfWidth  = width  * 0.5
+  self.halfHeight = height * 0.5
 
   return self
     :setImage(image)
@@ -144,6 +146,7 @@ function SpriteInstance:initialize(sprite)
 
   return self
     :setAnimation('default')
+    :setRotation(0)
 end
 
 function SpriteInstance:hasAnimation(animation)
@@ -221,11 +224,13 @@ function SpriteInstance:draw(x, y)
   love.graphics.draw(
     self._sprite._image,
     self._quad,
-    math.floor(x + offsetX + 0.5),
-    math.floor(y + offsetY + 0.5),
-    0,
+    math.floor(x - self._sprite.halfWidth  + offsetX + 0.5),
+    math.floor(y - self._sprite.halfHeight + offsetY + 0.5),
+    self._rotation,
     scaleX,
-    1
+    1,
+    self._sprite.halfWidth,
+    self._sprite.halfHeight
   )
 
   return self
@@ -258,6 +263,17 @@ end
 
 function SpriteInstance:getHeight()
   return self._sprite:getHeight()
+end
+
+function SpriteInstance:getRotation(rot)
+  return self._rotation
+end
+
+local TAU = math.pi * 2
+
+function SpriteInstance:setRotation(rot)
+  self._rotation = rot % TAU
+  return self
 end
 
 
