@@ -161,6 +161,10 @@ describe('Mokyu:', function()
       assert.are.same(false, spriteInstance:isMirrored())
     end)
 
+    it('setMirrored should error on non-boolean value', function()
+      assert.error(function() spriteInstance:setMirrored(1) end)
+    end)
+
     it('setRotation should set the rotation', function()
       spriteInstance:setRotation(0)
       assert.are.same(0, spriteInstance:getRotation())
@@ -173,6 +177,10 @@ describe('Mokyu:', function()
 
       spriteInstance:setRotation(TWO_HUNDRED_SEVENTY_DEGREES)
       assert.are.same(TWO_HUNDRED_SEVENTY_DEGREES, spriteInstance:getRotation())
+    end)
+
+    it('setRotation should error on non-numeric value', function()
+      assert.error(function() spriteInstance:setRotation(false) end)
     end)
 
     it('setRotation should set the rotato modulo Tau', function()

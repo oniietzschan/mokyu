@@ -204,6 +204,7 @@ function SpriteInstance:isMirrored()
 end
 
 function SpriteInstance:setMirrored(mirrored)
+  assert(type(mirrored) == 'boolean', 'Mirrored value must be a boolean')
   self.mirrored = mirrored
   return self
 end
@@ -215,6 +216,7 @@ end
 local TAU = math.pi * 2
 
 function SpriteInstance:setRotation(rot)
+  assert(type(rot) == 'number', 'Rotation value must be a number')
   self._rotation = rot % TAU
   return self
 end
