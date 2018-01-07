@@ -107,6 +107,10 @@ function Sprite:setOriginRect(x, y, w, h)
   return self
 end
 
+function Sprite:getAnimations()
+  return self._animations
+end
+
 function Sprite:addAnimation(name, data)
   data.frequency = data.frequency or 1
 
@@ -148,6 +152,10 @@ function SpriteInstance:initialize(sprite)
   return self
     :setAnimation('default')
     :setRotation(0)
+end
+
+function SpriteInstance:getAnimations()
+  return self._sprite:getAnimations()
 end
 
 function SpriteInstance:getAnimation()

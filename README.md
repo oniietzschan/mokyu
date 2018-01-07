@@ -66,6 +66,9 @@ sprite:addAnimation('jump', {2, 3, 4, 4, 3, 6})
 -- Checks whether a named animation exists.
 hasJumpAnimation = sprite:hasAnimation('jump')
 
+-- Gets all animations.
+animations = sprite:getAnimations()
+
 -- Sets origin rectangle.
 sprite:setOriginRect(x, y, w, h)
 
@@ -96,6 +99,9 @@ currentAnimation = spriteInstance:getAnimation()
 
 -- Checks whether parent sprite has named animation.
 hasJumpAnimation = spriteInstance:hasAnimation('attack')
+
+-- Gets all animations from parent sprite.
+animations = sprite:getAnimations()
 
 -- Sets the animation position. Position should be a number >= 0 and < 1.
 spriteInstance:setAnimationPosition(0.5)
