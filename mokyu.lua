@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.3.0',
+  _VERSION     = 'mokyu v0.4.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[
@@ -29,6 +29,15 @@ local Mokyu = {
 
 
 
+local function assertType(obj, expectedType, name)
+  assert(type(expectedType) == 'string' and type(name) == 'string')
+  if type(obj) ~= expectedType then
+    error(name .. ' must be a ' .. expectedType .. ', got: ' .. tostring(obj), 2)
+  end
+end
+
+
+
 local Sprite = {}
 local SpriteMetaTable = {__index = Sprite}
 
@@ -37,13 +46,18 @@ function Mokyu.newSprite(...)
     :initialize(...)
 end
 
-function Sprite:initialize(image, width, height, top, left)
+function Sprite:initialize(image, width, height, cols, rows, left, top)
+  cols = cols or 1
+  rows = rows or 1
   top = top or 0
   left = left or 0
-  assert(type(width) == 'number', 'width must be a number')
-  assert(type(height) == 'number', 'height must be a number')
-  assert(type(top) == 'number', 'top must be a number')
-  assert(type(left) == 'number', 'left must be a number')
+
+  assertType(width, 'number', 'width')
+  assertType(height, 'number', 'height')
+  assertType(cols, 'number', 'cols')
+  assertType(rows, 'number', 'rows')
+  assertType(left, 'number', 'left')
+  assertType(top, 'number', 'top')
 
   self._image = image
   self._animations = {}
@@ -52,7 +66,7 @@ function Sprite:initialize(image, width, height, top, left)
 
   return self
     :setImage(image)
-    :_initializeQuads(width, height, top, left)
+    :_initializeQuads(width, height, cols, rows, left, top)
     :setOriginRect(0, 0, width, height)
     :addAnimation('default', {frequency = 1, 1})
 end
@@ -66,17 +80,14 @@ function Sprite:setImage(image)
   return self
 end
 
-function Sprite:_initializeQuads(width, height, top, left)
+function Sprite:_initializeQuads(width, height, cols, rows, left, top)
   local imageWidth, imageHeight = self._image:getDimensions()
-  local cols = imageWidth / width
-  local rows = imageHeight / height
-
   self._quads = {}
   for y = 0, (rows - 1) do
     for x = 0, (cols - 1) do
       local quad = love.graphics.newQuad(
-        x * width  + top,
-        y * height + left,
+        x * width  + left,
+        y * height + top,
         width,
         height,
         imageWidth,
@@ -216,7 +227,7 @@ function SpriteInstance:isMirrored()
 end
 
 function SpriteInstance:setMirrored(mirrored)
-  assert(type(mirrored) == 'boolean', 'Mirrored value must be a boolean')
+  assertType(mirrored, 'boolean', 'mirrored')
   self._mirrored = mirrored
   return self
 end
@@ -227,9 +238,9 @@ end
 
 local TAU = math.pi * 2
 
-function SpriteInstance:setRotation(rot)
-  assert(type(rot) == 'number', 'Rotation value must be a number')
-  self._rotation = rot % TAU
+function SpriteInstance:setRotation(rotation)
+  assertType(rotation, 'number', 'rotation')
+  self._rotation = rotation % TAU
   return self
 end
 

@@ -36,7 +36,7 @@ describe('Mokyu:', function()
     local sprite
 
     before_each(function()
-      sprite = Mokyu.newSprite(image, width, height)
+      sprite = Mokyu.newSprite(image, width, height, 4, 2)
     end)
 
     it('It should set image', function()

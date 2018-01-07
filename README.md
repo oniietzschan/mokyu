@@ -21,7 +21,11 @@ function love.load(arg)
   sprite = Mokyu.sprite(
     image,
     16, -- quad width
-    16 --  quad height
+    16, -- quad height
+    6, -- number of columns in spritesheet (Default: 1)
+    1, -- number of rows in spritesheet (Default: 1)
+    0, -- left offset of spritesheet in image (Default: 0)
+    0 -- top offset of spritesheet in image (Default: 0)
   )
     :setOriginRect(1, 1, 14, 14)
     :addAnimation('walk', {
@@ -139,4 +143,5 @@ x, y, w, h = spriteInstance:getDrawRect()
 Todo
 ----
 
+* More useful default values for cols and rows. (Try to use the entire spritesheet?)
 * Reevaluate `SpriteInstance:getDrawRect()`.
