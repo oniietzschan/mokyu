@@ -71,7 +71,7 @@ function Sprite:_initializeQuads(width, height, top, left)
   local cols = imageWidth / width
   local rows = imageHeight / height
 
-  self.quads = {}
+  self._quads = {}
   for y = 0, (rows - 1) do
     for x = 0, (cols - 1) do
       local quad = love.graphics.newQuad(
@@ -82,7 +82,7 @@ function Sprite:_initializeQuads(width, height, top, left)
         imageWidth,
         imageHeight
       )
-      table.insert(self.quads, quad)
+      table.insert(self._quads, quad)
     end
   end
 
@@ -192,7 +192,7 @@ function SpriteInstance:animate(dt)
   end
   self._animationPosition = newPosition % 1
   local frame = math.floor(self._animationPosition * #self._animation) + 1
-  self._quad = self._sprite.quads[self._animation[frame]]
+  self._quad = self._sprite._quads[self._animation[frame]]
 
   return self
 end

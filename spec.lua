@@ -54,7 +54,7 @@ describe('Mokyu:', function()
       assert.spy(_G.love.graphics.newQuad).was.called_with(32, 24, 16, 24, 64, 48)
       assert.spy(_G.love.graphics.newQuad).was.called_with(48, 24, 16, 24, 64, 48)
 
-      assert.are.same(8, #sprite.quads)
+      assert.are.same(8, #sprite._quads)
     end)
 
     it('It should set correct originRect', function ()
