@@ -185,7 +185,6 @@ function SpriteInstance:initialize(sprite)
   return self
     :setAnimation('default')
     :setRotation(0)
-    :resume()
 end
 
 function SpriteInstance:getAnimations()
