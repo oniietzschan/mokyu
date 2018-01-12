@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.4.0',
+  _VERSION     = 'mokyu v0.5.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[
@@ -123,11 +123,33 @@ function Sprite:getAnimations()
 end
 
 function Sprite:addAnimation(name, data)
-  data.frequency = data.frequency or 1
+  local animation = {
+    frequency = data.frequency or 1,
+    onLoop = data.onLoop,
+  }
 
-  self._animations[name] = data
+  for _, interval in ipairs(data) do
+    local min, max, step = self:_parseInterval(interval)
+    for i = min, max, step do
+      table.insert(animation, i)
+    end
+  end
+
+  self._animations[name] = animation
 
   return self
+end
+
+function Sprite:_parseInterval(val)
+  if type(val) == 'number' then
+    return val, val, 1
+  end
+  val = val:gsub(' ', '')
+  local min, max = val:match('^(%d+)-(%d+)$')
+  assert(min and max, 'Could not parse interval from: ' .. tostring(val))
+  min, max = tonumber(min), tonumber(max)
+  local step = (min <= max) and 1 or -1
+  return min, max, step
 end
 
 function Sprite:hasAnimation(animation)
@@ -163,6 +185,7 @@ function SpriteInstance:initialize(sprite)
   return self
     :setAnimation('default')
     :setRotation(0)
+    :resume()
 end
 
 function SpriteInstance:getAnimations()
@@ -185,25 +208,26 @@ function SpriteInstance:setAnimation(animation)
   end
 
   self._animation = self._sprite._animations[animation]
-  self._animationPosition = 0
-  self:animate(0) -- Set the quad.
   self._animationName = animation
 
   return self
+    :setAnimationPosition(0)
+    :resume()
 end
 
 function SpriteInstance:animate(dt)
-  local newPosition = self._animationPosition + (self._animation.frequency * dt)
-  if newPosition >= 1 then
-    if self._animation.onLoop == 'pauseAtEnd' then
-      newPosition = 0.99999
-    elseif self._animation.onLoop == 'pauseAtStart' then
-      newPosition = 0
-    end
+  if self._status ~= 'playing' then
+    return
   end
-  self._animationPosition = newPosition % 1
-  local frame = math.floor(self._animationPosition * #self._animation) + 1
-  self._quad = self._sprite._quads[self._animation[frame]]
+
+  local newPosition = self._animationPosition + (self._animation.frequency * dt)
+  self:setAnimationPosition(newPosition % 1)
+
+  local onLoop = self._animation.onLoop
+  if newPosition >= 1 and onLoop then
+    local fn = (type(onLoop) == 'function') and onLoop or self[onLoop]
+    fn(self)
+  end
 
   return self
 end
@@ -215,10 +239,15 @@ end
 function SpriteInstance:setAnimationPosition(pos)
   assert(type(pos) == 'number' and pos >= 0 and pos < 1, 'animation position must be a number and >= 0 and < 1.')
   self._animationPosition = pos
+  self._quad = nil
   return self
 end
 
 function SpriteInstance:getQuad()
+  if self._quad == nil then
+    local frame = math.floor(self._animationPosition * #self._animation) + 1
+    self._quad = self._sprite._quads[self._animation[frame]]
+  end
   return self._quad
 end
 
@@ -244,6 +273,26 @@ function SpriteInstance:setRotation(rotation)
   return self
 end
 
+function SpriteInstance:resume()
+  self._status = 'playing'
+  return self
+end
+
+function SpriteInstance:pause()
+  self._status = 'paused'
+  return self
+end
+
+function SpriteInstance:pauseAtStart()
+  self._animationPosition = 0
+  return self:pause()
+end
+
+function SpriteInstance:pauseAtEnd()
+  self._animationPosition = 0.99999
+  return self:pause()
+end
+
 function SpriteInstance:draw(x, y)
   local sprite = self._sprite
   local scaleX = (self._mirrored == true) and -1 or 1
@@ -260,7 +309,7 @@ function SpriteInstance:draw(x, y)
 
   love.graphics.draw(
     sprite._image,
-    self._quad,
+    self:getQuad(),
     math.floor(x + sprite._originHalfW + 0.5),
     math.floor(y + sprite._originHalfH + 0.5),
     self._rotation,

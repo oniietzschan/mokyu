@@ -30,7 +30,11 @@ function love.load(arg)
     :setOriginRect(1, 1, 14, 14)
     :addAnimation('walk', {
         frequency = 2, -- two full animation cycles per second
-        1, 2, 3, 4, 5, 6, -- array portion of table stores the frames
+        1, 2, 3, 4, 5, 6, -- array portion of table defines the frames
+    })
+    :addAnimation('attack', {
+        onLoop = 'pauseAtStart', -- ????
+        '7-10' -- strings can also be used to define sets of frames
     })
 
   entity.sprite = sprite:newInstance()
@@ -65,7 +69,7 @@ sprite:setImage(image)
 image = sprite:getImage(image)
 
 -- Adds a new animation.
-sprite:addAnimation('jump', {2, 3, 4, 4, 3, 6})
+sprite:addAnimation('attack', {'1-4', '3-4', 5})
 
 -- Checks whether a named animation exists.
 hasJumpAnimation = sprite:hasAnimation('jump')

@@ -99,6 +99,53 @@ describe('Mokyu:', function()
     end)
   end)
 
+  describe('When creating animations', function()
+    local sprite
+
+    before_each(function()
+      sprite = Mokyu.newSprite(image, width, height)
+    end)
+
+    it('should be able to add an animation with number frames', function()
+      sprite:addAnimation('test', {1, 2, 3, 4})
+      local animations = sprite:getAnimations()
+      local animation = animations['test']
+      assert.is_not_nil(animation)
+      assert.are.same(1, animation.frequency)
+      assert.are.same(1, animation[1])
+      assert.are.same(2, animation[2])
+      assert.are.same(3, animation[3])
+      assert.are.same(4, animation[4])
+    end)
+
+    it('should be able to add an animation with interval string frames', function()
+      sprite:addAnimation('test', {'1-4'})
+      local animations = sprite:getAnimations()
+      local animation = animations['test']
+      assert.is_not_nil(animation)
+      assert.are.same(1, animation.frequency)
+      assert.are.same(1, animation[1])
+      assert.are.same(2, animation[2])
+      assert.are.same(3, animation[3])
+      assert.are.same(4, animation[4])
+    end)
+
+    it('should be able to add an animation with mix of numbers and string intervals', function()
+      sprite:addAnimation('test', {'1-3', 4, '3-1'})
+      local animations = sprite:getAnimations()
+      local animation = animations['test']
+      assert.is_not_nil(animation)
+      assert.are.same(1, animation.frequency)
+      assert.are.same(1, animation[1])
+      assert.are.same(2, animation[2])
+      assert.are.same(3, animation[3])
+      assert.are.same(4, animation[4])
+      assert.are.same(3, animation[5])
+      assert.are.same(2, animation[6])
+      assert.are.same(1, animation[7])
+    end)
+  end)
+
   describe('When creating a new SpriteInstance:', function()
     local sprite, spriteInstance
 
