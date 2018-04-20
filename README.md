@@ -3,6 +3,7 @@ mokyu
 
 [![Build Status](https://travis-ci.org/oniietzschan/mokyu.svg?branch=master)](https://travis-ci.org/oniietzschan/mokyu)
 [![Codecov](https://codecov.io/gh/oniietzschan/mokyu/branch/master/graph/badge.svg)](https://codecov.io/gh/oniietzschan/mokyu)
+![Love Versions](https://img.shields.io/badge/Love2d-11%2C%200.10-blue.svg)
 
 A library to handle sprite manipulation and animation in Love2D. Usable, but unpolished.
 
