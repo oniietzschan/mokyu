@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.5.0',
+  _VERSION     = 'mokyu v0.6.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[
@@ -47,15 +47,22 @@ function Mokyu.newSprite(...)
 end
 
 function Sprite:initialize(image, width, height, cols, rows, left, top)
-  cols = cols or 1
-  rows = rows or 1
-  top = top or 0
-  left = left or 0
-
   assertType(width, 'number', 'width')
   assertType(height, 'number', 'height')
+
+  if cols or rows then
+    cols = cols or 1
+    rows = rows or 1
+  elseif cols == nil and rows == nil and top == nil and left == nil then
+    local iw, ih = image:getDimensions()
+    cols = math.floor(iw / width)
+    rows = math.floor(ih / height)
+  end
   assertType(cols, 'number', 'cols')
   assertType(rows, 'number', 'rows')
+
+  top = top or 0
+  left = left or 0
   assertType(left, 'number', 'left')
   assertType(top, 'number', 'top')
 

@@ -35,15 +35,7 @@ describe('Mokyu:', function()
   describe('When creating a new sprite:', function()
     local sprite
 
-    before_each(function()
-      sprite = Mokyu.newSprite(image, width, height, 4, 2)
-    end)
-
-    it('It should set image', function()
-      assert.are.equals(image, sprite:getImage())
-    end)
-
-    it('It should initialize quads', function ()
+    local function assertQuadsInitializedCorrectly()
       assert.spy(_G.love.graphics.newQuad).was.called(8)
       assert.spy(_G.love.graphics.newQuad).was.called_with( 0,  0, 16, 24, 64, 48)
       assert.spy(_G.love.graphics.newQuad).was.called_with(16,  0, 16, 24, 64, 48)
@@ -53,21 +45,46 @@ describe('Mokyu:', function()
       assert.spy(_G.love.graphics.newQuad).was.called_with(16, 24, 16, 24, 64, 48)
       assert.spy(_G.love.graphics.newQuad).was.called_with(32, 24, 16, 24, 64, 48)
       assert.spy(_G.love.graphics.newQuad).was.called_with(48, 24, 16, 24, 64, 48)
-
       assert.are.same(8, #sprite._quads)
+    end
+
+    describe('When all parameters are specified', function()
+      before_each(function()
+        sprite = Mokyu.newSprite(image, width, height, 4, 2, 0, 0)
+      end)
+
+      it('It should set image', function()
+        assert.are.equals(image, sprite:getImage())
+      end)
+
+      it('It should initialize quads', function ()
+        assertQuadsInitializedCorrectly()
+      end)
+
+      it('It should set correct originRect', function ()
+        assert.are.same(width, sprite.width)
+        assert.are.same(height, sprite.height)
+        assert.are.same({0, 0, width, height}, {sprite:getOriginRect()})
+      end)
+
+      it('It should create default animation', function()
+        local expected = {
+          default = {frequency = 1, 1},
+        }
+        assert.are.same(expected, sprite._animations)
+      end)
     end)
 
-    it('It should set correct originRect', function ()
-      assert.are.same(width, sprite.width)
-      assert.are.same(height, sprite.height)
-      assert.are.same({0, 0, width, height}, {sprite:getOriginRect()})
-    end)
+    describe('When some parameters are not specified', function()
+      it('It should default left and top to 0 when not specified.', function()
+        sprite = Mokyu.newSprite(image, width, height, 4, 2)
+        assertQuadsInitializedCorrectly()
+      end)
 
-    it('It should create default animation', function()
-      local expected = {
-        default = {frequency = 1, 1},
-      }
-      assert.are.same(expected, sprite._animations)
+      it('It should infer rows and cols from image dimensions when not specified', function()
+        sprite = Mokyu.newSprite(image, width, height)
+        assertQuadsInitializedCorrectly()
+      end)
     end)
   end)
 
