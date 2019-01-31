@@ -49,6 +49,7 @@ end
 function Sprite:initialize(image, width, height, cols, rows, left, top)
   assertType(width, 'number', 'width')
   assertType(height, 'number', 'height')
+  assert(width > 0 and height > 0, 'width and height must be greater than 0.')
 
   if cols or rows then
     cols = cols or 1
