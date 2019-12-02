@@ -12,5 +12,6 @@ files = {
 }
 
 exclude_files = {
+  'lua_install/*', -- CI: hererocks
   'main.lua',
 }
