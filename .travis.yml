@@ -19,8 +19,7 @@ install:
   - luarocks install luacov
 
 script:
-  - luacheck --no-unused-args --std max+love   mokyu.lua
-  - luacheck --no-unused-args --std max+busted spec.lua
+  - luacheck .
   - busted --verbose --coverage spec.lua
 
 after_success:

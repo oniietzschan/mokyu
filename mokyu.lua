@@ -79,7 +79,7 @@ function Sprite:initialize(image, width, height, cols, rows, left, top)
     :addAnimation('default', {frequency = 1, 1})
 end
 
-function Sprite:getImage(image)
+function Sprite:getImage()
   return self._image
 end
 
@@ -268,7 +268,7 @@ function SpriteInstance:setMirrored(mirrored)
   return self
 end
 
-function SpriteInstance:getRotation(rot)
+function SpriteInstance:getRotation()
   return self._rotation
 end
 
