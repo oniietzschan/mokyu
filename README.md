@@ -30,12 +30,18 @@ function love.load(arg)
   )
     :setOriginRect(1, 1, 14, 14)
     :addAnimation('walk', {
-        frequency = 2, -- two full animation cycles per second
-        1, 2, 3, 4, 5, 6, -- array portion of table defines the frames
+      frequency = 2, -- two full animation cycles per second
+      1, 2, 3, 4, 5, 6, -- array portion of table defines the frames
     })
     :addAnimation('attack', {
-        onLoop = 'pauseAtStart', -- ????
-        '7-10' -- strings can also be used to define sets of frames
+      onLoop = 'pauseAtStart', -- ????
+      '7-10' -- You can define frames as a range.
+    })
+    :addAnimation('idle', {
+      '11x8', 12, 13, 12, -- You can define multiple copies of the same frame.
+    })
+    :addAnimation('jump', {
+      '14-18', 'LOOP', '19-21', -- You can definte a loop point.
     })
 
   entity.sprite = sprite:newInstance()

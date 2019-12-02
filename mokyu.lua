@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.6.0',
+  _VERSION     = 'mokyu v0.7.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[
@@ -130,34 +130,55 @@ function Sprite:getAnimations()
   return self._animations
 end
 
-function Sprite:addAnimation(name, data)
-  local animation = {
-    frequency = data.frequency or 1,
-    onLoop = data.onLoop,
-  }
+do
+  local FORMAT_RANGE  = '^(%d+)-(%d+)$'
+  local FORMAT_REPEAT = '^(%d+)x(%d+)$'
 
-  for _, interval in ipairs(data) do
-    local min, max, step = self:_parseInterval(interval)
-    for i = min, max, step do
-      table.insert(animation, i)
-    end
+  function Sprite:addAnimation(name, data)
+    local animation = {
+      frequency = data.frequency or 1,
+      onLoop = data.onLoop,
+    }
+
+    for _, val in ipairs(data) do repeat
+      -- BASIC: single frame index; ex: 1
+      if type(val) == 'number' then
+        table.insert(animation, val)
+        break -- continue
+      end
+
+      -- RANGE: Range of frames; ex: "1-5"
+      do
+        local min, max = val:match(FORMAT_RANGE)
+        if min and max then
+          min, max = tonumber(min), tonumber(max)
+          local step = (min <= max) and 1 or -1
+          for i = min, max, step do
+            table.insert(animation, i)
+          end
+          break -- continue
+        end
+      end
+
+      -- REPEAT: index and number of times; ex: "1x3"
+      do
+        local index, times = val:match(FORMAT_REPEAT)
+        if index and times then
+          index, times = tonumber(index), tonumber(times)
+          for _ = 1, times do
+            table.insert(animation, index)
+          end
+          break -- continue
+        end
+      end
+
+      error('Could not parse interval from: ' .. tostring(val))
+    until true end
+
+    self._animations[name] = animation
+
+    return self
   end
-
-  self._animations[name] = animation
-
-  return self
-end
-
-function Sprite:_parseInterval(val)
-  if type(val) == 'number' then
-    return val, val, 1
-  end
-  val = val:gsub(' ', '')
-  local min, max = val:match('^(%d+)-(%d+)$')
-  assert(min and max, 'Could not parse interval from: ' .. tostring(val))
-  min, max = tonumber(min), tonumber(max)
-  local step = (min <= max) and 1 or -1
-  return min, max, step
 end
 
 function Sprite:hasAnimation(animation)
@@ -272,12 +293,14 @@ function SpriteInstance:getRotation()
   return self._rotation
 end
 
-local TAU = math.pi * 2
+do
+  local TAU = math.pi * 2
 
-function SpriteInstance:setRotation(rotation)
-  assertType(rotation, 'number', 'rotation')
-  self._rotation = rotation % TAU
-  return self
+  function SpriteInstance:setRotation(rotation)
+    assertType(rotation, 'number', 'rotation')
+    self._rotation = rotation % TAU
+    return self
+  end
 end
 
 function SpriteInstance:resume()
