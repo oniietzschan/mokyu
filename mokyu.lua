@@ -298,17 +298,15 @@ end
 
 function SpriteInstance:animate(dt)
   if self._status ~= 'playing' then
-    return
+    return self
   end
 
-  local advance = self._animation.frequency * dt
-  local newPosition = self._animationPosition + advance
-
+  local newPosition = self._animationPosition + (self._animation.frequency * dt)
   if newPosition < 1 then
-    self:setAnimationPosition(newPosition % 1)
+    self:setAnimationPosition(newPosition)
   else
     local loopAt = self._animation.loopAt
-    local pos = ((self._animationPosition + advance) % (1 - loopAt)) % 1 + loopAt
+    local pos = (newPosition % (1 - loopAt)) % 1 + loopAt
     self:setAnimationPosition(pos)
   end
 

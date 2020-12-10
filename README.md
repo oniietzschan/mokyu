@@ -34,7 +34,6 @@ function love.load(arg)
       1, 2, 3, 4, 5, 6, -- array portion of table defines the frames
     })
     :addAnimation('attack', {
-      onLoop = 'pauseAtStart', -- ????
       '7-10' -- You can define frames as a range.
     })
     :addAnimation('idle', {
