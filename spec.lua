@@ -50,7 +50,7 @@ describe('Mokyu:', function()
 
     describe('When all parameters are specified', function()
       before_each(function()
-        sprite = Mokyu.newSprite(image, width, height, 4, 2, 0, 0)
+        sprite = Mokyu.newSprite(image, width, height, 4, 8, 0, 0)
       end)
 
       it('It should set image', function()
@@ -69,7 +69,12 @@ describe('Mokyu:', function()
 
       it('It should create default animation', function()
         local expected = {
-          default = {frequency = 1, 1},
+          default = {
+            frequency = 1,
+            length = 1,
+            loopAt = 0,
+            1,
+          },
         }
         assert.are.same(expected, sprite._animations)
       end)
@@ -77,7 +82,7 @@ describe('Mokyu:', function()
 
     describe('When some parameters are not specified', function()
       it('It should default left and top to 0 when not specified.', function()
-        sprite = Mokyu.newSprite(image, width, height, 4, 2)
+        sprite = Mokyu.newSprite(image, width, height, 4, 8)
         assertQuadsInitializedCorrectly()
       end)
 
@@ -186,7 +191,12 @@ describe('Mokyu:', function()
     end)
 
     it('should set animation to correct defaults', function()
-      local defaultAnimation = {frequency = 1, 1}
+      local defaultAnimation = {
+        frequency = 1,
+        length = 1,
+        loopAt = 0,
+        1,
+      }
       local firstQuad = {0, 0, 16, 24, 64, 48, quad = true}
 
       assert.are.equals(sprite, spriteInstance:getSprite())
@@ -286,6 +296,88 @@ describe('Mokyu:', function()
     end)
   end)
 
+  describe('When animating', function()
+    local sprite
+
+    before_each(function()
+      sprite = Mokyu.newSprite(image, width, height)
+    end)
+
+    local instance
+
+    local function animate(dt)
+      instance:animate(dt)
+    end
+
+    local function assertAtPosition(expected)
+      local actual = instance:getAnimationPosition()
+      local areEqual = math.abs(actual - expected) < 0.0001
+      if not areEqual then
+        local err = 'assertAtPosition: ' .. actual .. ' != ' .. expected
+        assert.is_true(false, err)
+      end
+    end
+
+    it('Should loop froms start when no loop point is set.', function()
+      sprite:addAnimation('default', {'1-5', '1-5'})
+      instance = sprite:newInstance()
+
+      assertAtPosition(0)
+      animate(0.1)
+      assertAtPosition(0.1)
+      animate(0.1)
+      assertAtPosition(0.2)
+      animate(0.3)
+      assertAtPosition(0.5)
+      animate(0.45)
+      assertAtPosition(0.95)
+      animate(0.05)
+      assertAtPosition(0)
+      animate(0.75)
+      assertAtPosition(0.75)
+      animate(0.75)
+      assertAtPosition(0.5)
+      animate(2)
+      assertAtPosition(0.5)
+    end)
+
+    it('Should loop from LOOP when loop point is set.', function()
+      sprite:addAnimation('default', {'1-5', 'LOOP', '1-5'})
+      instance = sprite:newInstance()
+
+      assertAtPosition(0)
+      animate(0.4)
+      assertAtPosition(0.4)
+      animate(0.55)
+      assertAtPosition(0.95)
+      animate(0.05)
+      assertAtPosition(0.5)
+      animate(0.75)
+      assertAtPosition(0.75)
+      animate(0.3)
+      assertAtPosition(0.55)
+      animate(0.6)
+      assertAtPosition(0.65)
+      animate(1.1)
+      assertAtPosition(0.75)
+    end)
+
+    it('Should stay at last frame if loop at the end', function()
+      sprite:addAnimation('default', {'1-5', '1-5', 'LOOP'})
+      instance = sprite:newInstance()
+
+      assertAtPosition(0)
+      animate(0.5)
+      assertAtPosition(0.5)
+      animate(0.5)
+      assertAtPosition(0.9)
+      animate(0.15)
+      assertAtPosition(0.95)
+      animate(0.25)
+      assertAtPosition(0.9)
+    end)
+  end)
+
   describe('When calling SpriteInstance:draw()', function()
     local sprite, spriteInstance, quad
     local x, y = 1000, 2000
@@ -339,9 +431,8 @@ describe('Mokyu:', function()
 
     describe('When Sprite has custom originrect with width which is not a divisible by 2', function()
       local oL, oT, oW, oH = 3, 6, 5, 15
-      local expX = math.floor(x + (oW / 2) + 0.5)
-      local expY = math.floor(y + (oH / 2) + 0.5)
-      local expOriginY = math.floor(oT + (oH / 2) + 0.5)
+      local expX = math.floor(x + 0.5) + (oW / 2)
+      local expY = math.floor(y + 0.5) + (oH / 2)
 
       before_each(function()
         sprite:setOriginRect(oL, oT, oW, oH)
@@ -349,16 +440,19 @@ describe('Mokyu:', function()
 
       it('should call love.graphics.draw, rounding originX up from .5', function()
         spriteInstance:draw(x, y)
-        local expOriginX = math.floor(oL + (oW / 2) + 0.5)
+        local expOriginX = math.floor(oL + 0.5) + (oW / 2)
+        local expOriginY = math.floor(oT + 0.5) + (oH / 2)
         assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, 1, 1, expOriginX, expOriginY)
       end)
 
       it('should call love.graphics.draw when mirrored, rounding originX down from .5', function()
+        spriteInstance.flipped = true
         spriteInstance
           :setMirrored(true)
           :draw(x, y)
-        local expOriginX = math.ceil(oL + (oW / 2) - 0.5)
-        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, 1, expOriginX, expOriginY)
+        local expOriginX = math.ceil(oL - 0.5) + (oW / 2)
+        local expOriginY = math.ceil(oT - 0.5) + (oH / 2)
+        assert.spy(_G.love.graphics.draw).was.called_with(image, quad, expX, expY, 0, -1, -1, expOriginX, expOriginY)
       end)
     end)
 

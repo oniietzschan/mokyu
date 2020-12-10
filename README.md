@@ -24,7 +24,7 @@ function love.load(arg)
     16, -- quad width
     16, -- quad height
     6, -- number of columns in spritesheet (Default: 1)
-    1, -- number of rows in spritesheet (Default: 1)
+    21, -- number of cells in spritesheet (Default: 1)
     0, -- left offset of spritesheet in image (Default: 0)
     0 -- top offset of spritesheet in image (Default: 0)
   )
@@ -38,10 +38,10 @@ function love.load(arg)
       '7-10' -- You can define frames as a range.
     })
     :addAnimation('idle', {
-      '11x8', 12, 13, 12, -- You can define multiple copies of the same frame.
+      '11x8', 12, 11, 12, -- You can define multiple copies of the same frame.
     })
-    :addAnimation('jump', {
-      '14-18', 'LOOP', '19-21', -- You can definte a loop point.
+    :addAnimation('fly', {
+      '13-18', 'LOOP', '19-21', -- You can set a point to loop from
     })
 
   entity.sprite = sprite:newInstance()
@@ -154,5 +154,4 @@ x, y, w, h = spriteInstance:getDrawRect()
 Todo
 ----
 
-* More useful default values for cols and rows. (Try to use the entire spritesheet?)
 * Reevaluate `SpriteInstance:getDrawRect()`.

@@ -1,5 +1,5 @@
 local Mokyu = {
-  _VERSION     = 'mokyu v0.7.0',
+  _VERSION     = 'mokyu v0.8.0',
   _URL         = 'https://github.com/oniietzschan/mokyu',
   _DESCRIPTION = 'A library to handle sprite manipulation and animation in Love2D.',
   _LICENSE     = [[
@@ -29,6 +29,8 @@ local Mokyu = {
 
 
 
+local NO_QUAD = 'NO_QUAD'
+
 local function assertType(obj, expectedType, name)
   assert(type(expectedType) == 'string' and type(name) == 'string')
   if type(obj) ~= expectedType then
@@ -46,35 +48,34 @@ function Mokyu.newSprite(...)
     :initialize(...)
 end
 
-function Sprite:initialize(image, width, height, cols, rows, left, top)
+function Sprite:initialize(image, width, height, cols, cells, left, top)
   assertType(width, 'number', 'width')
   assertType(height, 'number', 'height')
   assert(width > 0 and height > 0, 'width and height must be greater than 0.')
 
-  if cols or rows then
+  if cols or cells then
     cols = cols or 1
-    rows = rows or 1
-  elseif cols == nil and rows == nil and top == nil and left == nil then
+    cells = cells or cols
+  elseif cols == nil and cells == nil and left == nil and top == nil  then
     local iw, ih = image:getDimensions()
     cols = math.floor(iw / width)
-    rows = math.floor(ih / height)
+    cells = cols * math.floor(ih / height)
   end
   assertType(cols, 'number', 'cols')
-  assertType(rows, 'number', 'rows')
+  assertType(cells, 'number', 'cells')
 
-  top = top or 0
   left = left or 0
+  top = top or 0
   assertType(left, 'number', 'left')
   assertType(top, 'number', 'top')
 
-  self._image = image
   self._animations = {}
   self.width  = width
   self.height = height
 
   return self
     :setImage(image)
-    :_initializeQuads(width, height, cols, rows, left, top)
+    :_initializeQuads(width, height, cols, cells, left, top)
     :setOriginRect(0, 0, width, height)
     :addAnimation('default', {frequency = 1, 1})
 end
@@ -88,20 +89,28 @@ function Sprite:setImage(image)
   return self
 end
 
-function Sprite:_initializeQuads(width, height, cols, rows, left, top)
+function Sprite:_initializeQuads(width, height, cols, cells, left, top)
   local imageWidth, imageHeight = self._image:getDimensions()
   self._quads = {}
-  for y = 0, (rows - 1) do
-    for x = 0, (cols - 1) do
-      local quad = love.graphics.newQuad(
-        x * width  + left,
-        y * height + top,
-        width,
-        height,
-        imageWidth,
-        imageHeight
-      )
-      table.insert(self._quads, quad)
+  local x, y = 0, 0
+  for _ = 1, cells do
+    local quad = love.graphics.newQuad(
+      x * width  + left,
+      y * height + top,
+      width,
+      height,
+      imageWidth,
+      imageHeight
+    )
+    table.insert(self._quads, quad)
+
+    if x < cols - 1 then
+      -- Next quad within same row.
+      x = x + 1
+    else
+      -- First quad on next row.
+      x = 0
+      y = y + 1
     end
   end
 
@@ -123,6 +132,7 @@ function Sprite:setOriginRect(x, y, w, h)
   self._originHalfW = self._originW / 2
   self._originHalfH = self._originH / 2
   self._originX2 = x + w
+  self._originY2 = y + h
   return self
 end
 
@@ -135,15 +145,18 @@ do
   local FORMAT_REPEAT = '^(%d+)x(%d+)$'
 
   function Sprite:addAnimation(name, data)
-    local animation = {
-      frequency = data.frequency or 1,
-      onLoop = data.onLoop,
-    }
+    local animation = {}
+    local loopFrame = 0
 
     for _, val in ipairs(data) do repeat
       -- BASIC: single frame index; ex: 1
       if type(val) == 'number' then
         table.insert(animation, val)
+        break -- continue
+
+      elseif val == 'LOOP' then
+        -- LOOP: set loop point
+        loopFrame = #animation
         break -- continue
       end
 
@@ -175,14 +188,47 @@ do
       error('Could not parse interval from: ' .. tostring(val))
     until true end
 
+    animation.length = #animation
+
+    -- loopAt must be less than 1.
+    loopFrame = math.min(loopFrame, animation.length - 1)
+    animation.loopAt = loopFrame / animation.length
+
+    -- Validate that all quads references in animation actually exist.
+    local quadCount = #self._quads
+    for i = 1, animation.length do
+      local quadId = animation[i]
+      if quadId % 1 ~= 0 or quadId < 0 or quadId > quadCount then
+        error('Sprite:addAnimation() - Invalid quad ID: ' .. tostring(quadId))
+      end
+    end
+
+    if data.frequency then
+      animation.frequency = data.frequency
+    elseif data.period then
+      animation.frequency = 1 / data.period
+    elseif data.frameTime then
+      animation.frequency = 1 / (animation.length * data.frameTime)
+    else
+      animation.frequency = 1
+    end
+
     self._animations[name] = animation
 
     return self
   end
 end
 
-function Sprite:hasAnimation(animation)
-  return self._animations[animation] ~= nil
+function Sprite:hasAnimation(name)
+  assertType(name, 'string', 'animation name')
+  return self._animations[name] ~= nil
+end
+
+function Sprite:getAnimationDuration(name)
+  if self:hasAnimation(name) == false then
+    error('No animation with name: ' .. name, 2)
+  end
+  return 1 / self._animations[name].frequency
 end
 
 function Sprite:getWidth()
@@ -210,6 +256,7 @@ end
 function SpriteInstance:initialize(sprite)
   self._sprite = sprite
   self._mirrored = false
+  self.flipped = false
 
   return self
     :setAnimation('default')
@@ -229,7 +276,9 @@ function SpriteInstance:hasAnimation(animation)
 end
 
 function SpriteInstance:setAnimation(animation)
-  assert(self:hasAnimation(animation) == true, 'Sprite has no animation named: ' .. animation)
+  if self:hasAnimation(animation) == false then
+    error('Sprite has no animation named: ' .. animation)
+  end
 
   if self._sprite._animations[animation] == self._animation then
     return self -- SpriteInstances is already using this animation
@@ -243,18 +292,24 @@ function SpriteInstance:setAnimation(animation)
     :resume()
 end
 
+function SpriteInstance:getAnimationDuration(name)
+  return self._sprite:getAnimationDuration(name)
+end
+
 function SpriteInstance:animate(dt)
   if self._status ~= 'playing' then
     return
   end
 
-  local newPosition = self._animationPosition + (self._animation.frequency * dt)
-  self:setAnimationPosition(newPosition % 1)
+  local advance = self._animation.frequency * dt
+  local newPosition = self._animationPosition + advance
 
-  local onLoop = self._animation.onLoop
-  if newPosition >= 1 and onLoop then
-    local fn = (type(onLoop) == 'function') and onLoop or self[onLoop]
-    fn(self)
+  if newPosition < 1 then
+    self:setAnimationPosition(newPosition % 1)
+  else
+    local loopAt = self._animation.loopAt
+    local pos = ((self._animationPosition + advance) % (1 - loopAt)) % 1 + loopAt
+    self:setAnimationPosition(pos)
   end
 
   return self
@@ -273,8 +328,13 @@ end
 
 function SpriteInstance:getQuad()
   if self._quad == nil then
-    local frame = math.floor(self._animationPosition * #self._animation) + 1
-    self._quad = self._sprite._quads[self._animation[frame]]
+    local frame = math.floor(self._animationPosition * self._animation.length) + 1
+    local quadNumber = self._animation[frame]
+    if quadNumber == 0 then
+      self._quad = NO_QUAD
+    else
+      self._quad = self._sprite._quads[quadNumber]
+    end
   end
   return self._quad
 end
@@ -324,27 +384,32 @@ function SpriteInstance:pauseAtEnd()
 end
 
 function SpriteInstance:draw(x, y)
+  local quad = self:getQuad()
+  if quad == NO_QUAD then
+    return self
+  end
+
   local sprite = self._sprite
   local scaleX = (self._mirrored == true) and -1 or 1
+  local scaleY = (self.flipped == true) and -1 or 1
 
   -- Round origin differently depending on whether sprite is mirrored or not.
   -- This makes it so that non-integer origins still cause the sprite to have their top, left corner pinned at (x, y).
-  local roundedOriginX
-  if self._mirrored then
-    roundedOriginX = math.ceil(sprite._originX + sprite._originHalfW - 0.5)
-  else
-    roundedOriginX = math.floor(sprite._originX + sprite._originHalfW + 0.5)
-  end
-  local roundedOriginY = math.floor(sprite._originY + sprite._originHalfH + 0.5)
+  local roundedOriginX = self._mirrored
+    and (math.ceil(sprite._originX - 0.5) + sprite._originHalfW)
+    or (math.floor(sprite._originX + 0.5) + sprite._originHalfW)
+  local roundedOriginY = self.flipped
+    and (math.ceil(sprite._originY - 0.5) + sprite._originHalfH)
+    or (math.floor(sprite._originY + 0.5) + sprite._originHalfH)
 
   love.graphics.draw(
     sprite._image,
-    self:getQuad(),
-    math.floor(x + sprite._originHalfW + 0.5),
-    math.floor(y + sprite._originHalfH + 0.5),
+    quad,
+    math.floor(x + 0.5) + sprite._originHalfW,
+    math.floor(y + 0.5) + sprite._originHalfH,
     self._rotation,
     scaleX,
-    1,
+    scaleY,
     roundedOriginX,
     roundedOriginY
   )
@@ -354,13 +419,12 @@ end
 
 function SpriteInstance:getDrawRect()
   local w, h = self:getDimensions()
-  local x
-  if self._mirrored then
-    x = self._sprite._originX2 - w
-  else
-    x = self._sprite._originX * -1
-  end
-  local y = self._sprite._originY * -1
+  local x = (self._mirrored == true)
+    and (self._sprite._originX2 - w)
+    or (self._sprite._originX * -1)
+  local y = (self.flipped == true)
+    and (self._sprite._originY2 - h)
+    or (self._sprite._originY * -1)
   return x, y, w, h
 end
 
