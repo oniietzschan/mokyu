@@ -362,6 +362,22 @@ describe('Mokyu:', function()
       assertAtPosition(0.75)
     end)
 
+    it('Should loop even when <loop frame> is not a factor of <frame count>', function()
+      sprite:addAnimation('default', {
+        frameTime = 1,
+        1, 'LOOP', 2, 3
+      })
+      instance = sprite:newInstance()
+
+      assertAtPosition(0)
+      animate(3)
+      assertAtPosition(1/3)
+      animate(1)
+      assertAtPosition(2/3)
+      animate(1)
+      assertAtPosition(1/3)
+    end)
+
     it('Should stay at last frame if loop at the end', function()
       sprite:addAnimation('default', {'1-5', '1-5', 'LOOP'})
       instance = sprite:newInstance()

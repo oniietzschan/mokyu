@@ -306,7 +306,7 @@ function SpriteInstance:animate(dt)
     self:setAnimationPosition(newPosition)
   else
     local loopAt = self._animation.loopAt
-    local pos = (newPosition % (1 - loopAt)) % 1 + loopAt
+    local pos = ((newPosition - loopAt) % (1 - loopAt)) % 1 + loopAt
     self:setAnimationPosition(pos)
   end
 
